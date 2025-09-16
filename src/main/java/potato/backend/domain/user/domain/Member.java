@@ -25,11 +25,22 @@ public class Member extends BaseEntity{
     @Column(name = "member_id")
     private Long id;
 
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private String hashedPassword;
-    private String role;
+
+    private Role role;
+
+    @Column(nullable = false)
     private String mobileNumber;
+
+    @Column(nullable = false)
     private Boolean activated;
     private BigDecimal ratingScore;
+
 }
