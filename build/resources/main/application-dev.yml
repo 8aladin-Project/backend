@@ -1,9 +1,0 @@
-spring:
-  config:
-    import: optional:file:.env[.properties]
-
-  datasource:
-    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5433/database}
-    username: ${POSTGRES_USER:root}
-    password: ${POSTGRES_PASSWORD:1234}
-    driver-class-name: org.postgresql.Driver

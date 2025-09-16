@@ -30,3 +30,6 @@ target/
 # Gradle
 build/
 .gradle/
+
+# intelliJ
+.idea/
