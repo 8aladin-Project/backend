@@ -39,9 +39,12 @@ public class Member extends BaseEntity{
     @Column(nullable = false)
     private String mobileNumber;
 
-    @Column(nullable = false)
-    private Boolean activated;
-    private BigDecimal ratingScore;
+    @Builder.Default
+    private Boolean activated = true;
+
+    @Builder.Default
+    private BigDecimal ratingScore = BigDecimal.ZERO;
+
 
     public static Member create(String name, String email, String hashedPassword, String role, String mobileNumber){
         return Member.builder()
