@@ -43,4 +43,15 @@ public class Member extends BaseEntity{
     private Boolean activated;
     private BigDecimal ratingScore;
 
+    public static Member create(String name, String email, String hashedPassword, String role, String mobileNumber){
+        return Member.builder()
+            .name(name)
+            .email(email)
+            .hashedPassword(hashedPassword)
+            .role(Role.USER)
+            .mobileNumber(mobileNumber)
+            .activated(true)
+            .ratingScore(BigDecimal.ZERO)
+            .build();
+    }
 }
