@@ -1,6 +1,6 @@
 package potato.backend.domain.common.domain;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Column;
@@ -18,11 +18,11 @@ import lombok.Getter;
 public class BaseEntity {
 
     @CreatedDate
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @LastModifiedDate
-    private Timestamp updatedAt;
+    private LocalDateTime updatedAt;
 
     @Column(name = "deleted_at", nullable = true)
-    private Timestamp deletedAt;
+    private LocalDateTime deletedAt;
 }
