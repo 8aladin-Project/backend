@@ -2,6 +2,8 @@ package potato.backend.domain.user.domain;
 
 import java.math.BigDecimal;
 
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
@@ -28,12 +30,13 @@ public class Member extends BaseEntity{
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String hashedPassword;
 
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     @Column(nullable = false)
@@ -46,7 +49,7 @@ public class Member extends BaseEntity{
     private BigDecimal ratingScore = BigDecimal.ZERO;
 
 
-    public static Member create(String name, String email, String hashedPassword, String role, String mobileNumber){
+    public static Member create(String name, String email, String hashedPassword, String mobileNumber){
         return Member.builder()
             .name(name)
             .email(email)
