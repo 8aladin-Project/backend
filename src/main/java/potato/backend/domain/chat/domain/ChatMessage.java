@@ -16,7 +16,7 @@ public class ChatMessage extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "chat_messages_id")
+    @Column(name = "chat_message_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
