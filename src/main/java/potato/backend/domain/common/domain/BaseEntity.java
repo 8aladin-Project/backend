@@ -1,13 +1,13 @@
 package potato.backend.domain.common.domain;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import lombok.Getter;
@@ -17,12 +17,13 @@ import lombok.Getter;
 @EntityListeners(AuditingEntityListener.class)
 public class BaseEntity {
 
-    @CreatedDate
-    private LocalDateTime createdAt;
 
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
+    @CreationTimestamp
+    private Instant createdAt;
 
-    @Column(name = "deleted_at", nullable = true)
-    private LocalDateTime deletedAt;
+    @UpdateTimestamp
+    private Instant updatedAt;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
 }
