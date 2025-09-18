@@ -35,9 +35,8 @@ public class ChatMessage extends BaseEntity {
     @Builder.Default
     private boolean isRead = false; // 읽음여부는 기본적으로 false
 
-    @Column(name = "sent_at")
-    @Builder.Default
-    private Instant sentAt = Instant.now(); // 보낸 순간은 Instant.now()를 이용해 현재 시간으로 초기화
+    @Column(name = "sent_at", nullable = false)
+    private Instant sentAt;
 
     // ChatMessage 생성자 메서드
     public static ChatMessage create(Member member, ChatRoom chatRoom, String content) {
