@@ -32,7 +32,7 @@ public class Product extends BaseEntity {
     @JoinColumn(nullable = false)
     private Member userId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     private Category categoryId;
 
