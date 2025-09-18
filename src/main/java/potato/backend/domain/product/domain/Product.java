@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
 import potato.backend.domain.common.domain.BaseEntity;
+import potato.backend.domain.user.domain.Member;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -28,7 +29,7 @@ public class Product extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Column(nullable = false)
-    private User userId;
+    private Member userId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @Column(nullable = false)
@@ -41,7 +42,7 @@ public class Product extends BaseEntity {
     private String title;
 
     @Lob // content의 길이를 제한하지 않음
-    @Column(nullable = false)
+    @Column(nullable = false)ß
     private String content;
 
     @Column(nullable = false, precision = 18, scale = 0) // 금액 관련 부분은 DB에 명시해 DB가 원하는 자릿수를 강제
@@ -57,7 +58,7 @@ public class Product extends BaseEntity {
 
 
     public static Product create(
-            User userId,
+            Member userId,
             Category categoryId,
             String title,
             String content,
