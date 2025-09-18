@@ -3,13 +3,10 @@ package potato.backend.domain.product.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import potato.backend.domain.common.domain.BaseEntity;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -29,11 +26,13 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
     @Column(nullable = false)
-    private Long userId;
+    private User userId;
 
+    @OneToOne(fetch = FetchType.LAZY)
     @Column(nullable = false)
-    private Long categoryId;
+    private Category categoryId;
 
     @Version
     private Long version; // 동시 수정에 따른 버전 별 관리
@@ -56,18 +55,10 @@ public class Product extends BaseEntity {
     @Builder.Default
     private Long viewCount = 0L;
 
-    @CreationTimestamp
-    private Instant createdAt;
-
-    @UpdateTimestamp
-    private Instant updatedAt;
-
-    @Column(name = "deleted_at")
-    private Instant deletedAt;
 
     public static Product create(
-            Long userId,
-            Long categoryId,
+            User userId,
+            Category categoryId,
             String title,
             String content,
             BigDecimal price,
