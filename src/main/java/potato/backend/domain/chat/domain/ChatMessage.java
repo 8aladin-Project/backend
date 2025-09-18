@@ -3,6 +3,7 @@ package potato.backend.domain.chat.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import potato.backend.domain.common.domain.BaseEntity;
+import potato.backend.domain.user.domain.Member;
 
 import java.time.Instant;
 
@@ -24,8 +25,8 @@ public class ChatMessage extends BaseEntity {
     private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_participant_id", nullable = false)
-    private ChatRoomParticipant sender;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member sender;
 
     @Column(columnDefinition = "TEXT")
     private String content;
@@ -38,7 +39,7 @@ public class ChatMessage extends BaseEntity {
     private Instant sentAt;
 
     // ChatMessage 생성자 메서드
-    public static ChatMessage create(ChatRoomParticipant sender, ChatRoom chatRoom, String content) {
+    public static ChatMessage create(Member sender, ChatRoom chatRoom, String content) {
         validateParticipant(sender, chatRoom);
         return ChatMessage.builder()
                 .chatRoom(chatRoom)
@@ -60,7 +61,7 @@ public class ChatMessage extends BaseEntity {
     }
 
     // 양방향 연관관계 설정 메서드 - 메시지 전송자를 설정
-    public void assignSender(ChatRoomParticipant sender) {
+    public void assignSender(Member sender) {
         this.sender = sender;
     }
 
@@ -70,21 +71,18 @@ public class ChatMessage extends BaseEntity {
         if (this.sentAt == null) {
             this.sentAt = Instant.now();
         }
-        if (this.chatRoom == null && this.sender != null) {
-            this.chatRoom = this.sender.getChatRoom();
-        }
         validateParticipant(this.sender, this.chatRoom);
     }
 
     // 유효성 검사 메서드
-    private static void validateParticipant(ChatRoomParticipant participant, ChatRoom chatRoom) {
+    private static void validateParticipant(Member participant, ChatRoom chatRoom) {
         if (participant == null) {
             throw new IllegalStateException("Chat message sender must not be null");
         }
         if (chatRoom == null) {
             throw new IllegalStateException("Chat message chat room must not be null");
         }
-        if (participant.getChatRoom() == null || !participant.getChatRoom().equals(chatRoom)) {
+        if (!chatRoom.isParticipant(participant)) {
             throw new IllegalArgumentException("Sender is not a participant of the chat room");
         }
     }

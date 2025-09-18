@@ -8,7 +8,6 @@ import potato.backend.domain.user.domain.Member;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Entity
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -22,12 +21,12 @@ public class ChatRoom extends BaseEntity {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_member_id")
-    private Member createdBy; // 채팅방 생성자
+    @JoinColumn(name = "seller_id", nullable = false)
+    private Member seller; // 상품을 등록한 판매자
 
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<ChatRoomParticipant> participants = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "buyer_id", nullable = false)
+    private Member buyer; // 구매를 시도하는 사용자
 
     // product 엔티티 구현시 주석 해제
     // @ManyToOne(fetch = FetchType.LAZY)
@@ -40,27 +39,21 @@ public class ChatRoom extends BaseEntity {
 
 
     // ChatRoom 생성자
-    public static ChatRoom create(Member createdBy) {
+    public static ChatRoom create(Member seller, Member buyer) {
         return ChatRoom.builder()
-                .createdBy(createdBy)
+                .seller(seller)
+                .buyer(buyer)
                 .build();
-    }
-
-    // 채팅방 참여자 추가
-    public void addParticipant(ChatRoomParticipant participant) {
-        if (!this.participants.contains(participant)) {
-            this.participants.add(participant);
-            participant.assignChatRoom(this);
-        }
     }
 
     // 메시지 추가 메서드
     public void addMessage(ChatMessage message) {
-        if (message.getSender() == null || !this.equals(message.getSender().getChatRoom())) {
-            throw new IllegalArgumentException("Message sender must be a participant of the chat room");
-        }
         this.messages.add(message);
         message.assignChatRoom(this);
+    }
+
+    public boolean isParticipant(Member member) {
+        return member != null && (member.equals(seller) || member.equals(buyer));
     }
 
 }
