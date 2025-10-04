@@ -30,6 +30,7 @@ target/
 # Gradle
 build/
 .gradle/
+bin/
 
 # intelliJ
 .idea/
