@@ -18,7 +18,9 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/v3/api-docs.yaml"
+                                "/v3/api-docs.yaml",
+                                "/ws-chat/**",  // WebSocket 엔드포인트 허용
+                                "/ws-chat"      // SockJS 엔드포인트 허용
                         ).permitAll()
                         // 전부 허용 (개발용)
                         .anyRequest().permitAll()
