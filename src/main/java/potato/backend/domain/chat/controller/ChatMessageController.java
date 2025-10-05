@@ -1,4 +1,4 @@
-package potato.backend.domain.chat.presentation;
+package potato.backend.domain.chat.controller;
 
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
