@@ -23,8 +23,14 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
 
-    // 채팅방과 발신자를 확인한 뒤 메시지를 생성 및 저장
-    // 이후 메시지 전송 DTO로 변환하여 반환하는 메서드
+    /**
+     * 메시지 전송 메서드
+     * 채팅방과 발신자를 확인한 뒤 메시지를 생성 및 저장
+     * 이후 메시지 전송 DTO로 변환하여 반환하는 메서드
+     * @param roomId
+     * @param request
+     * @return
+     */
     @Transactional
     public ChatMessageResponse sendMessage(Long roomId, ChatSendRequest request) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)

@@ -6,21 +6,22 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
+import lombok.NoArgsConstructor;
 import potato.backend.domain.chat.domain.ChatRoom;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatRoomResponse {
 
-    private final Long chatRoomId;
-    private final Long sellerId;
-    private final String sellerName;
-    private final Long buyerId;
-    private final String buyerName;
-    private final Instant createdAt;
-    private final Instant updatedAt;
+    private Long chatRoomId;
+    private Long sellerId;
+    private String sellerName;
+    private Long buyerId;
+    private String buyerName;
+    private Instant createdAt;
+    private Instant updatedAt;
 
     public static ChatRoomResponse from(ChatRoom chatRoom) {
         return ChatRoomResponse.builder()

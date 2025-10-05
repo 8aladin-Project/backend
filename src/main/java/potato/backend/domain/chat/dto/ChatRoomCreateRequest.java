@@ -2,13 +2,19 @@ package potato.backend.domain.chat.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// 채팅방 생성 요청 DTO
 @Getter
 @Setter
-@NoArgsConstructor
+@Builder(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatRoomCreateRequest {
 
     @NotNull
@@ -19,8 +25,8 @@ public class ChatRoomCreateRequest {
     @Positive
     private Long buyerId;
 
-    public ChatRoomCreateRequest(Long sellerId, Long buyerId) {
-        this.sellerId = sellerId;
-        this.buyerId = buyerId;
+
+    public static ChatRoomCreateRequest of(Long sellerId, Long buyerId) {
+        return new ChatRoomCreateRequest(sellerId, buyerId);
     }
 }

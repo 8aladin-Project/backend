@@ -23,6 +23,9 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final MemberRepository memberRepository;
 
+    /**
+     * 채팅방 생성 메서드
+     */
     @Transactional
     public ChatRoomResponse createChatRoom(ChatRoomCreateRequest request) {
         validateDistinctParticipants(request);
@@ -36,12 +39,23 @@ public class ChatRoomService {
         return ChatRoomResponse.from(chatRoom);
     }
 
+
+    /**
+     * 채팅방 단건 조회 메서드
+     * @param chatRoomId
+     * @return
+     */
     public ChatRoomResponse getChatRoom(Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat room not found: " + chatRoomId));
         return ChatRoomResponse.from(chatRoom);
     }
 
+    /**
+     * memberId를 기준으로 채팅방 목록 조회 메서드
+     * @param memberId
+     * @return
+     */
     public List<ChatRoomResponse> getChatRooms(Long memberId) {
         List<ChatRoom> chatRooms = (memberId != null)
                 ? chatRoomRepository.findAllByMemberId(memberId)
