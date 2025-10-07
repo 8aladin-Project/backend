@@ -44,8 +44,8 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Lob // content의 길이를 제한하지 않음
-    @Column(nullable = false)
+    // @Lob // content의 길이를 제한하지 않음
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)
