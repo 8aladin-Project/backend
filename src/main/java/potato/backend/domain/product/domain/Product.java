@@ -9,6 +9,7 @@ import potato.backend.domain.user.domain.Member;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -30,14 +31,14 @@ public class Product extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
-    private Member userId;
+    private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    private Category categoryId;
-
-    @Version
-    private Long version; // 동시 수정에 따른 버전 별 관리
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "product_categories",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private List<Category> categories;
 
     @Column(nullable = false)
     private String title;
@@ -45,6 +46,12 @@ public class Product extends BaseEntity {
     @Lob // content의 길이를 제한하지 않음
     @Column(nullable = false)
     private String content;
+
+    @Column(nullable = false)
+    private String mainImageUrl;
+
+    @Column(nullable = false)
+    private List<Image> images;
 
     @Column(nullable = false, precision = 18, scale = 0) // 금액 관련 부분은 DB에 명시해 DB가 원하는 자릿수를 강제
     private BigDecimal price;
@@ -57,24 +64,38 @@ public class Product extends BaseEntity {
     @Builder.Default
     private Long viewCount = 0L;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Long likeCount = 0L;
 
+
+// == 생성 메서드 ==
     public static Product create(
-            Member userId,
-            Category categoryId,
+            Member memberId,
+            List<Category> categoryId,
             String title,
             String content,
+            List<Image> images,
             BigDecimal price,
-            Status status
+            Status status,
+            String mainImageUrl
+
     ) {
-        Objects.requireNonNull(userId, "userId");
+        Objects.requireNonNull(memberId, "memberId");
         Objects.requireNonNull(categoryId, "categoryId");
         Objects.requireNonNull(title, "title");
         Objects.requireNonNull(content, "content");
         Objects.requireNonNull(price, "price");
         Objects.requireNonNull(status, "status");
+        Objects.requireNonNull(mainImageUrl, "mainImageUrl");
+        Objects.requireNonNull(images, "images");
 
         if (price.signum() < 0) {
             throw new IllegalArgumentException("price must be >= 0");
+        }
+
+        if (images.isEmpty()) {
+            throw new IllegalArgumentException("images must not be empty");
         }
 
         // scale 고정 + 반올림 모드 명시 (금융 기본: HALF_UP)
@@ -82,10 +103,12 @@ public class Product extends BaseEntity {
         BigDecimal normalized = price.setScale(0, RoundingMode.HALF_UP);
 
         return Product.builder()
-                .userId(userId)
-                .categoryId(categoryId)
+                .member(memberId)
+                .categories(categoryId)
                 .title(title)
                 .content(content)
+                .mainImageUrl(mainImageUrl)
+                .images(images)
                 .price(normalized)
                 .status(status)
                 .build();
