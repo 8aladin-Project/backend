@@ -26,37 +26,47 @@ public class WishlistService {
     private final ProductRepository productRepository;
 
     /**
-     * 위시리스트 토글 (하트 버튼 클릭 시)
+     * 위시리스트에 상품 추가
      * @param memberId 회원 ID
      * @param productId 상품 ID
-     * @return true: 추가됨, false: 제거됨
      */
     @Transactional
-    public boolean addOrRemoveFromWishlist(Long memberId, Long productId) {
-        // 회원 존재 여부 확인
+    public void addToWishlist(Long memberId, Long productId) {
         Member member = getMember(memberId);
-        
-        // 상품 존재 여부 확인
         Product product = getProduct(productId);
         
-        // 이미 위시리스트에 있는지 확인
-        Optional<Wishlist> existingWishlist = wishlistRepository.findByMemberIdAndProductId(memberId, productId);
-        
-        if (existingWishlist.isPresent()) {
-            // 이미 있으면 제거
-            wishlistRepository.delete(existingWishlist.get());
-            log.info("위시리스트 제거: memberId={}, productId={}", memberId, productId);
-            return false; // 제거됨
-        } else {
-            // 없으면 추가
-            Wishlist wishlist = Wishlist.create(member, product);
-            wishlistRepository.save(wishlist);
-            log.info("위시리스트 추가: memberId={}, productId={}", memberId, productId);
-            return true; // 추가됨
+        // 중복 체크
+        if (wishlistRepository.findByMemberIdAndProductId(memberId, productId).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, 
+                    "이미 위시리스트에 추가된 상품입니다");
         }
+        
+        Wishlist wishlist = Wishlist.create(member, product);
+        wishlistRepository.save(wishlist);
+        log.info("위시리스트에 상품 추가: memberId={}, productId={}", memberId, productId);
+    }
+
+    /**
+     * 위시리스트에서 상품 제거
+     * @param memberId 회원 ID
+     * @param productId 상품 ID
+     */
+    @Transactional
+    public void removeFromWishlist(Long memberId, Long productId) {
+        // 회원과 상품 존재 여부 확인
+        getMember(memberId);
+        getProduct(productId);
+        
+        Wishlist wishlist = wishlistRepository.findByMemberIdAndProductId(memberId, productId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
+                        "위시리스트에서 해당 상품을 찾을 수 없습니다"));
+        
+        wishlistRepository.delete(wishlist);
+        log.info("위시리스트에서 상품 제거: memberId={}, productId={}", memberId, productId);
     }
 
     // 위시리스트에 상품이 있는지 확인 (사용자가 상품 페이지에 들어갔을 때 표시하기 위해 필요)
+    @Transactional(readOnly = true)
     public boolean isInWishlist(Long memberId, Long productId) {
         return wishlistRepository.findByMemberIdAndProductId(memberId, productId).isPresent();
     }
