@@ -31,6 +31,14 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+    // AWS SDK v2 - S3
+    implementation(platform("software.amazon.awssdk:bom:2.35.2"))
+    implementation ('software.amazon.awssdk:s3')
+
+    implementation(platform("org.apache.logging.log4j:log4j-bom:2.20.0"))
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl")
+    implementation("org.apache.logging.log4j:log4j-1.2-api")
+
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
