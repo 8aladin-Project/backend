@@ -1,11 +1,9 @@
-package potato.backend.domain.product.domain;
+package potato.backend.domain.image.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
 import potato.backend.domain.common.domain.BaseEntity;
-
-import java.util.ArrayList;
-import java.util.List;
+import potato.backend.domain.product.domain.Product;
 
 @Entity
 @Getter
@@ -27,5 +25,13 @@ public class Image extends BaseEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private Product products;
 
+    @Column(nullable = false)
+    private String imageUrl;
 
+    public static Image create(Product product, String imageUrl) {
+        return Image.builder()
+            .products(product)
+            .imageUrl(imageUrl)
+            .build();
+    }
 }
