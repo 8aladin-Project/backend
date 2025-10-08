@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.Hibernate;
 import potato.backend.domain.category.Category;
 import potato.backend.domain.common.domain.BaseEntity;
+import potato.backend.domain.image.domain.Image;
 import potato.backend.domain.user.domain.Member;
 
 import java.math.BigDecimal;

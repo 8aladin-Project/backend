@@ -1,8 +1,6 @@
 package potato.backend.domain.product.dto;
 
 import lombok.*;
-import potato.backend.domain.category.Category;
-import potato.backend.domain.product.domain.Image;
 
 import java.util.List;
 
@@ -17,7 +15,7 @@ public class ProductCreateRequest {
     private List<String> category;
     private String content;
     private String mainImageUrl;
-    private List<Image> images;
+    private List<String> images;
     private Long price;
     private String status;
 
@@ -37,7 +35,7 @@ public class ProductCreateRequest {
                 category,
                 content,
                 mainImageUrl,
-                images.stream().map(Image::create).toList(),
+                images,
                 price,
                 status
         );
