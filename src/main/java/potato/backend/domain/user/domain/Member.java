@@ -33,8 +33,11 @@ public class Member extends BaseEntity{
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String hashedPassword;
+
+    @Column(unique = true)
+    private String oauthId;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -59,5 +62,27 @@ public class Member extends BaseEntity{
             .activated(true)
             .ratingScore(BigDecimal.ZERO)
             .build();
+    }
+
+    // OAuth 회원가입용 메서드
+    public static Member create(String oauthId, String email, String name) {
+        return Member.builder()
+            .oauthId(oauthId)
+            .email(email)
+            .name(name)
+            .role(Role.USER)
+            .mobileNumber("") // OAuth는 전화번호가 없을 수 있음
+            .activated(true)
+            .ratingScore(BigDecimal.ZERO)
+            .build();
+    }
+
+    // OAuth 사용자 정보 업데이트 메서드들
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+
+    public void updateName(String name) {
+        this.name = name;
     }
 }
