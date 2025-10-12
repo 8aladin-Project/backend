@@ -34,3 +34,6 @@ bin/
 
 # intelliJ
 .idea/
+
+# 테스트용 파일
+chat-test.html

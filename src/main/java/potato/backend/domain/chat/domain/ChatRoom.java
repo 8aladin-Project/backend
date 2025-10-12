@@ -8,6 +8,7 @@ import potato.backend.domain.user.domain.Member;
 import java.util.ArrayList;
 import java.util.List;
 
+// 채팅방 엔티티
 @Entity
 @Getter
 @Builder(access = AccessLevel.PRIVATE)

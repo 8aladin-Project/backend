@@ -7,6 +7,7 @@ import potato.backend.domain.user.domain.Member;
 
 import java.time.Instant;
 
+// 채팅방 메시지 엔티티
 @Entity
 @Table(name = "chat_messages")
 @Getter

@@ -49,7 +49,10 @@ public class SecurityConfig {
                                 "/v3/api-docs.yaml",
                                 "/auth/**",
                                 "/oauth2/**",
-                                "/login/oauth2/**"
+                                "/login/oauth2/**",
+                                "/v3/api-docs.yaml",
+                                "/ws-chat/**",  // WebSocket 엔드포인트 허용
+                                "/ws-chat"      // SockJS 엔드포인트 허용
                         ).permitAll()
                         .anyRequest().authenticated() // 개발용
                 );
