@@ -132,7 +132,7 @@ public class JwtUtil {
             String email = claims.get(CLAIM_EMAIL, String.class);
 
             Collection<? extends GrantedAuthority> authorities = Collections.singleton(
-                    new SimpleGrantedAuthority(claims.get("role").toString()));
+                    new SimpleGrantedAuthority(role.getKey()));
 
             UserInfo principal = UserInfo.of(memberId, oauthId, role, name, email);
 
