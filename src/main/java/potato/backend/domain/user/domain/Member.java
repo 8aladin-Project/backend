@@ -42,7 +42,7 @@ public class Member extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String mobileNumber;
 
     @Builder.Default
@@ -71,7 +71,7 @@ public class Member extends BaseEntity{
             .email(email)
             .name(name)
             .role(Role.USER)
-            .mobileNumber("") // OAuth는 전화번호가 없을 수 있음
+            .mobileNumber(null) // OAuth는 전화번호가 없을 수 있음
             .activated(true)
             .ratingScore(BigDecimal.ZERO)
             .build();
@@ -84,5 +84,9 @@ public class Member extends BaseEntity{
 
     public void updateName(String name) {
         this.name = name;
+    }
+
+    public void updateMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
     }
 }
