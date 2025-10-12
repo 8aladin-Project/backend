@@ -23,7 +23,7 @@ public class Image extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    private Product products;
+    private Product product;
 
     @Column(nullable = false)
     private String imageUrl;
