@@ -51,7 +51,7 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/login/oauth2/**"
                         ).permitAll()
-                        .anyRequest().permitAll() // 개발용으로 모든 요청 허용
+                        .anyRequest().authenticated() // 개발용
                 );
 
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
