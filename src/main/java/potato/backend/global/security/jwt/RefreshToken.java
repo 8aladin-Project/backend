@@ -9,7 +9,7 @@ import lombok.*;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@RedisHash(value = "refresh_token", timeToLive = 864000)
+@RedisHash(value = "refresh_token", timeToLive = 1209600) // 14 days to match JWT expiration
 public class RefreshToken {
 
     @Id
