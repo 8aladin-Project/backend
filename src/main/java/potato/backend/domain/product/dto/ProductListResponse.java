@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 @Getter
 public class ProductListResponse {
-    private Long Id;
+    private Long id;
     private List<String> category;
     private String title;
     private Long price;
