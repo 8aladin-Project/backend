@@ -127,14 +127,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidImageException(InvalidImageException e) {
         logByType(e);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of(ErrorCode.BAD_REQUEST));
+                .body(ErrorResponse.of(ErrorCode.BAD_REQUEST, e.getMessage()));
     }
 
     @ExceptionHandler(ImageUploadException.class)
     public ResponseEntity<ErrorResponse> handleImageUploadException(ImageUploadException e) {
         logByType(e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ErrorResponse.of(ErrorCode.IMAGE_UPLOAD_FAILED));
+                .body(ErrorResponse.of(ErrorCode.IMAGE_UPLOAD_FAILED, e.getMessage()));
     }
 
     @ExceptionHandler(ImageNotFoundException.class)
@@ -150,7 +150,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         logByType(e);
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                .body(ErrorResponse.of(ErrorCode.FILE_SIZE_EXCEEDED));
+                .body(ErrorResponse.of(ErrorCode.FILE_SIZE_EXCEEDED, e.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
