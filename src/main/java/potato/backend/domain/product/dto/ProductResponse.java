@@ -2,7 +2,7 @@ package potato.backend.domain.product.dto;
 
 import lombok.Getter;
 import potato.backend.domain.category.Category;
-import potato.backend.domain.image.domain.Image;
+import potato.backend.domain.image.dto.ImageResponse;
 import potato.backend.domain.product.domain.Product;
 
 import java.util.List;
@@ -28,7 +28,7 @@ public class ProductResponse {
         response.title = product.getTitle();
         response.content = product.getContent();
         response.price = product.getPrice().longValue();
-        response.images = product.getImages();
+        response.images = ImageResponse.fromList(product.getImages());
         response.status = product.getStatus().name();
         response.likeCount = product.getLikeCount();
         response.viewCount = product.getViewCount();
