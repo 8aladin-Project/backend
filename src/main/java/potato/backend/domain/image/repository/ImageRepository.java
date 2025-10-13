@@ -18,27 +18,27 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     /**
      * 상품에 속한 이미지 목록 조회 (JPQL)
      */
-    @Query("SELECT i FROM Image i WHERE i.products = :product ORDER BY i.createdAt DESC")
-    List<Image> findByProducts(@Param("product") Product product);
+    @Query("SELECT i FROM Image i WHERE i.product = :product ORDER BY i.createdAt DESC")
+    List<Image> findByProduct(@Param("product") Product product);
     
     /**
      * 상품 ID로 이미지 목록 조회 (JPQL)
      */
-    @Query("SELECT i FROM Image i WHERE i.products.id = :productId ORDER BY i.createdAt DESC")
+    @Query("SELECT i FROM Image i WHERE i.product.id = :productId ORDER BY i.createdAt DESC")
     List<Image> findByProductId(@Param("productId") Long productId);
     
     /**
      * 상품에 속한 모든 이미지 삭제 (JPQL)
      */
     @Modifying
-    @Query("DELETE FROM Image i WHERE i.products = :product")
-    void deleteByProducts(@Param("product") Product product);
+    @Query("DELETE FROM Image i WHERE i.product = :product")
+    void deleteByProduct(@Param("product") Product product);
     
     /**
      * 상품 ID로 모든 이미지 삭제 (JPQL)
      */
     @Modifying
-    @Query("DELETE FROM Image i WHERE i.products.id = :productId")
+    @Query("DELETE FROM Image i WHERE i.product.id = :productId")
     void deleteByProductId(@Param("productId") Long productId);
     
     /**
@@ -62,7 +62,7 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     /**
      * 상품의 이미지 개수 조회 (JPQL)
      */
-    @Query("SELECT COUNT(i) FROM Image i WHERE i.products.id = :productId")
+    @Query("SELECT COUNT(i) FROM Image i WHERE i.product.id = :productId")
     long countByProductId(@Param("productId") Long productId);
     
     /**

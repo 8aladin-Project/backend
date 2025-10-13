@@ -30,7 +30,7 @@ public class Image extends BaseEntity {
 
     public static Image create(Product product, String imageUrl) {
         return Image.builder()
-            .products(product)
+            .product(product)
             .imageUrl(imageUrl)
             .build();
     }

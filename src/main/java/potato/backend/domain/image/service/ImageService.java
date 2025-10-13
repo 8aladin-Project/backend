@@ -84,7 +84,7 @@ public class ImageService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + productId));
         
-        List<Image> images = imageRepository.findByProducts(product);
+        List<Image> images = imageRepository.findByProduct(product);
         log.info("상품 이미지 조회 완료 - productId: {}, 이미지 개수: {}", productId, images.size());
         return ImageResponse.fromList(images);
     }
@@ -121,7 +121,7 @@ public class ImageService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + productId));
         
-        List<Image> images = imageRepository.findByProducts(product);
+        List<Image> images = imageRepository.findByProduct(product);
         
         if (!images.isEmpty()) {
             log.debug("삭제할 이미지 개수: {}", images.size());
@@ -135,7 +135,7 @@ public class ImageService {
             log.debug("S3 파일 삭제 완료");
             
             // DB에서 이미지 정보 삭제
-            imageRepository.deleteByProducts(product);
+            imageRepository.deleteByProduct(product);
             log.info("상품의 모든 이미지 삭제 완료 - productId: {}, 삭제된 이미지 개수: {}", 
                     productId, images.size());
         } else {
@@ -154,4 +154,3 @@ public class ImageService {
         return ImageResponse.from(image);
     }
 }
-
