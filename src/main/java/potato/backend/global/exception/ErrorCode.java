@@ -30,8 +30,15 @@ public enum ErrorCode {
     CONVERSATION_NOT_FOUND(HttpStatus.NOT_FOUND, "대화를 찾을 수 없습니다"),
     MESSAGE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "메시지 생성에 실패했습니다"),
     INVALID_MESSAGE_ROLE(HttpStatus.INTERNAL_SERVER_ERROR, "잘못된 메시지 역할입니다"),
-    ;
 
+
+    // Image
+    INVALID_IMAGE(HttpStatus.BAD_REQUEST, "유효하지 않은 이미지 파일입니다"),
+    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 업로드에 실패했습니다"),
+    IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "이미지를 찾을 수 없습니다"),
+    FILE_SIZE_EXCEEDED(HttpStatus.PAYLOAD_TOO_LARGE, "업로드 파일 크기가 제한을 초과했습니다"),
+    INVALID_ARGUMENT(HttpStatus.BAD_REQUEST, "유효하지 않은 인자입니다")
+    ;
     private final HttpStatus httpStatus;
     private final String message;
 }
