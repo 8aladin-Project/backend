@@ -62,7 +62,7 @@ public class WishlistController {
             @ApiResponse(responseCode = "404", description = "회원, 상품 또는 위시리스트를 찾을 수 없음")
     })
     @DeleteMapping
-    public ResponseEntity<WishlistResponse> removeFromWishlist(
+    public ResponseEntity<Void> removeFromWishlist(
             @Parameter(description = "회원 ID")
             @RequestParam Long memberId,
             @Parameter(description = "상품 ID")
@@ -70,13 +70,7 @@ public class WishlistController {
         
         wishlistService.removeFromWishlist(memberId, productId);
         
-        WishlistResponse response = WishlistResponse.of(
-            "상품이 위시리스트에서 제거되었습니다", 
-            memberId, 
-            productId
-        );
-        
-        return ResponseEntity.ok(response);
+        return ResponseEntity.noContent().build();
     }
 
     /**
