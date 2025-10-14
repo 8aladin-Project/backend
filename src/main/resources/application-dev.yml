@@ -8,6 +8,16 @@ spring:
     password: ${POSTGRES_PASSWORD:1234}
     driver-class-name: org.postgresql.Driver
 
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        highlight_sql: true
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
   # Redis 설정
   data:
     redis:
