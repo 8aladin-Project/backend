@@ -3,6 +3,7 @@ package potato.backend.domain.storage.config;
 import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,6 +15,7 @@ import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @Configuration
+@ConditionalOnProperty(name = "cloud.aws.s3.enabled", havingValue = "true", matchIfMissing = false)
 public class S3Config {
     @Value("${cloud.aws.s3.endpoint:#{null}}")
     private String endpoint;

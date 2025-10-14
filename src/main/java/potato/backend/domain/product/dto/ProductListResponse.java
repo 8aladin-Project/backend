@@ -23,7 +23,7 @@ public class ProductListResponse {
 
     public static ProductListResponse fromEntity(Product product) {
         ProductListResponse response = new ProductListResponse();
-        response.Id = product.getId();
+        response.id = product.getId();
         response.title = product.getTitle();
         response.category = product.getCategories()
                 .stream()

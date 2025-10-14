@@ -13,9 +13,13 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import lombok.extern.slf4j.Slf4j;
+import potato.backend.domain.image.exception.ImageNotFoundException;
+import potato.backend.domain.image.exception.ImageUploadException;
+import potato.backend.domain.image.exception.InvalidImageException;
 
 @Slf4j
 @RestControllerAdvice
@@ -116,5 +120,39 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         // 3. 그 외의 메시지 읽기 실패 오류
         return ResponseEntity.status(ErrorCode.BAD_REQUEST.getHttpStatus())
                 .body(ErrorResponse.of(ErrorCode.BAD_REQUEST));
+    }
+
+    // 이미지 도메인 예외들
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidImageException(InvalidImageException e) {
+        logByType(e);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(ErrorCode.BAD_REQUEST, e.getMessage()));
+    }
+
+    @ExceptionHandler(ImageUploadException.class)
+    public ResponseEntity<ErrorResponse> handleImageUploadException(ImageUploadException e) {
+        logByType(e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.of(ErrorCode.IMAGE_UPLOAD_FAILED, e.getMessage()));
+    }
+
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleImageNotFoundException(ImageNotFoundException e) {
+        logByType(e);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of(ErrorCode.IMAGE_NOT_FOUND, e.getMessage()));
+    }
+
+    /* ===================== 업로드/일반 파라미터 예외 ===================== */
+
+    // MaxUploadSizeExceededException은 ResponseEntityExceptionHandler에서 처리되므로 제거
+    // 필요시 handleExceptionInternal을 override하여 커스터마이징
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+        logByType(e);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(ErrorCode.INVALID_ARGUMENT, e.getMessage()));
     }
 }

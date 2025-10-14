@@ -2,6 +2,7 @@ package potato.backend.domain.image.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +25,9 @@ public class ImageService {
     
     private final ImageRepository imageRepository;
     private final ProductRepository productRepository;
-    private final S3Service s3Service;
+    
+    @Autowired(required = false)
+    private S3Service s3Service;
     
     /**
      * 이미지 업로드 및 저장
@@ -32,6 +35,10 @@ public class ImageService {
     @Transactional
     public List<ImageResponse> uploadImages(Long productId, List<MultipartFile> files) {
         log.info("이미지 업로드 시작 - productId: {}, 파일 개수: {}", productId, files.size());
+        
+        if (s3Service == null) {
+            throw new IllegalStateException("S3 서비스가 활성화되지 않았습니다. cloud.aws.s3.enabled=true로 설정해주세요.");
+        }
         
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + productId));
@@ -60,6 +67,10 @@ public class ImageService {
     public ImageResponse uploadImage(Long productId, MultipartFile file) {
         log.info("단일 이미지 업로드 시작 - productId: {}, 파일명: {}", productId, file.getOriginalFilename());
         
+        if (s3Service == null) {
+            throw new IllegalStateException("S3 서비스가 활성화되지 않았습니다. cloud.aws.s3.enabled=true로 설정해주세요.");
+        }
+        
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + productId));
         
@@ -84,7 +95,7 @@ public class ImageService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + productId));
         
-        List<Image> images = imageRepository.findByProducts(product);
+        List<Image> images = imageRepository.findByProduct(product);
         log.info("상품 이미지 조회 완료 - productId: {}, 이미지 개수: {}", productId, images.size());
         return ImageResponse.fromList(images);
     }
@@ -95,6 +106,10 @@ public class ImageService {
     @Transactional
     public void deleteImage(Long imageId) {
         log.info("이미지 삭제 시작 - imageId: {}", imageId);
+        
+        if (s3Service == null) {
+            throw new IllegalStateException("S3 서비스가 활성화되지 않았습니다. cloud.aws.s3.enabled=true로 설정해주세요.");
+        }
         
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new ImageNotFoundException(imageId));
@@ -118,10 +133,14 @@ public class ImageService {
     public void deleteAllImagesByProduct(Long productId) {
         log.info("상품의 모든 이미지 삭제 시작 - productId: {}", productId);
         
+        if (s3Service == null) {
+            throw new IllegalStateException("S3 서비스가 활성화되지 않았습니다. cloud.aws.s3.enabled=true로 설정해주세요.");
+        }
+        
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + productId));
         
-        List<Image> images = imageRepository.findByProducts(product);
+        List<Image> images = imageRepository.findByProduct(product);
         
         if (!images.isEmpty()) {
             log.debug("삭제할 이미지 개수: {}", images.size());
@@ -135,7 +154,7 @@ public class ImageService {
             log.debug("S3 파일 삭제 완료");
             
             // DB에서 이미지 정보 삭제
-            imageRepository.deleteByProducts(product);
+            imageRepository.deleteByProduct(product);
             log.info("상품의 모든 이미지 삭제 완료 - productId: {}, 삭제된 이미지 개수: {}", 
                     productId, images.size());
         } else {
@@ -154,4 +173,3 @@ public class ImageService {
         return ImageResponse.from(image);
     }
 }
-
