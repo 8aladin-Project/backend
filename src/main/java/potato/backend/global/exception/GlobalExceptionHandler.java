@@ -146,12 +146,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     /* ===================== 업로드/일반 파라미터 예외 ===================== */
 
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
-        logByType(e);
-        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                .body(ErrorResponse.of(ErrorCode.FILE_SIZE_EXCEEDED, e.getMessage()));
-    }
+    // MaxUploadSizeExceededException은 ResponseEntityExceptionHandler에서 처리되므로 제거
+    // 필요시 handleExceptionInternal을 override하여 커스터마이징
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
