@@ -11,9 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import potato.backend.domain.wishlist.service.WishlistService;
-
-import java.util.HashMap;
-import java.util.Map;
+import potato.backend.domain.wishlist.dto.WishlistResponse;
 
 @RestController
 @Validated
@@ -36,7 +34,7 @@ public class WishlistController {
             @ApiResponse(responseCode = "409", description = "이미 위시리스트에 추가된 상품")
     })
     @PostMapping
-    public ResponseEntity<Map<String, String>> addToWishlist(
+    public ResponseEntity<WishlistResponse> addToWishlist(
             @Parameter(description = "회원 ID")
             @RequestParam Long memberId,
             @Parameter(description = "상품 ID")
@@ -44,10 +42,11 @@ public class WishlistController {
         
         wishlistService.addToWishlist(memberId, productId);
         
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "상품이 위시리스트에 추가되었습니다");
-        response.put("memberId", memberId.toString());
-        response.put("productId", productId.toString());
+        WishlistResponse response = WishlistResponse.of(
+            "상품이 위시리스트에 추가되었습니다", 
+            memberId, 
+            productId
+        );
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -63,7 +62,7 @@ public class WishlistController {
             @ApiResponse(responseCode = "404", description = "회원, 상품 또는 위시리스트를 찾을 수 없음")
     })
     @DeleteMapping
-    public ResponseEntity<Map<String, String>> removeFromWishlist(
+    public ResponseEntity<WishlistResponse> removeFromWishlist(
             @Parameter(description = "회원 ID")
             @RequestParam Long memberId,
             @Parameter(description = "상품 ID")
@@ -71,10 +70,11 @@ public class WishlistController {
         
         wishlistService.removeFromWishlist(memberId, productId);
         
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "상품이 위시리스트에서 제거되었습니다");
-        response.put("memberId", memberId.toString());
-        response.put("productId", productId.toString());
+        WishlistResponse response = WishlistResponse.of(
+            "상품이 위시리스트에서 제거되었습니다", 
+            memberId, 
+            productId
+        );
         
         return ResponseEntity.ok(response);
     }
