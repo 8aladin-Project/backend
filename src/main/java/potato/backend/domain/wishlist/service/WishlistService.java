@@ -53,10 +53,6 @@ public class WishlistService {
      */
     @Transactional
     public void removeFromWishlist(Long memberId, Long productId) {
-        // 회원과 상품 존재 여부 확인
-        getMember(memberId);
-        getProduct(productId);
-        
         Wishlist wishlist = wishlistRepository.findByMemberIdAndProductId(memberId, productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
                         "위시리스트에서 해당 상품을 찾을 수 없습니다"));
