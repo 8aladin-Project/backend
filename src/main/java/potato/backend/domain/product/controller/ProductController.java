@@ -76,7 +76,7 @@ public class ProductController {
             @Parameter(description = "상품 생성 정보", required = true)
             @RequestBody ProductCreateRequest request
     ) {
-        log.info("상품 생성 요청 - title: {}, price: {}", request.getTitle(), request.getPrice());
+        log.info("상품 생성 요청");
         ProductResponse product = productService.createProduct(request);
         log.info("상품 생성 완료 - productId: {}, title: {}", product.getId(), product.getTitle());
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
@@ -93,7 +93,7 @@ public class ProductController {
             @Parameter(description = "상품 수정 정보", required = true)
             @RequestBody ProductUpdateRequest request
     ) {
-        log.info("상품 수정 요청 - productId: {}, title: {}", productId, request.getTitle());
+        log.info("상품 수정 요청 - productId: {}", productId);
         ProductResponse product = productService.updateProduct(productId, request);
         log.info("상품 수정 완료 - productId: {}, title: {}", product.getId(), product.getTitle());
         return ResponseEntity.ok(product);

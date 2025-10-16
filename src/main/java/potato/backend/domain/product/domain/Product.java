@@ -3,7 +3,7 @@ package potato.backend.domain.product.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
-import potato.backend.domain.category.Category;
+import potato.backend.domain.category.domain.Category;
 import potato.backend.domain.common.domain.BaseEntity;
 import potato.backend.domain.image.domain.Image;
 import potato.backend.domain.user.domain.Member;
@@ -52,7 +52,7 @@ public class Product extends BaseEntity {
     private String mainImageUrl;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> images = new java.util.ArrayList<>();
+    private List<Image> images;
 
     @Column(nullable = false, precision = 18, scale = 0) // 금액 관련 부분은 DB에 명시해 DB가 원하는 자릿수를 강제
     private BigDecimal price;
