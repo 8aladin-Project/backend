@@ -39,8 +39,6 @@ public class ProductService {
 
     private final CategoryRepository categoryRepository;
 
-    private  final ImageRepository imageRepository;
-
     /**
      * 상품 생성
      */
