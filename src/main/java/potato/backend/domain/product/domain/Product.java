@@ -54,7 +54,7 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images;
 
-    @Column(nullable = false, precision = 18, scale = 0) // 금액 관련 부분은 DB에 명시해 DB가 원하는 자릿수를 강제
+    @Column(nullable = false, precision = 18, scale = 0) // 금액 관련 부분�� DB에 명시해 DB가 원하는 자릿수를 강제
     private BigDecimal price;
 
     @Column(nullable = false)
@@ -131,6 +131,28 @@ public class Product extends BaseEntity {
     public int hashCode() {
         // 영속 전 해시 불안정성 방지: 클래스 기반 상수 해시
         return Hibernate.getClass(this).hashCode();
+    }
+
+    // == 비즈니스 메서드 ==
+    public void update(String title, String content, BigDecimal price, Status status, String mainImageUrl) {
+        if (title != null) {
+            this.title = title;
+        }
+        if (content != null) {
+            this.content = content;
+        }
+        if (price != null) {
+            if (price.signum() < 0) {
+                throw new IllegalArgumentException("price must be >= 0");
+            }
+            this.price = price.setScale(0, RoundingMode.HALF_UP);
+        }
+        if (status != null) {
+            this.status = status;
+        }
+        if (mainImageUrl != null) {
+            this.mainImageUrl = mainImageUrl;
+        }
     }
 
 }

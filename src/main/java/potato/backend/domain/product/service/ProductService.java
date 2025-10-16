@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import potato.backend.domain.category.domain.Category;
 import potato.backend.domain.category.repository.CategoryRepository;
 import potato.backend.domain.image.domain.Image;
-import potato.backend.domain.image.dto.ImageResponse;
 import potato.backend.domain.image.repository.ImageRepository;
 import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.product.domain.Status;
@@ -106,8 +105,10 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
-        // TODO: Product 엔티티에 update 메서드 추가 필요
-        // product.update(request.getTitle(), request.getContent(), ...);
+        product.update(request.getTitle(), request.getContent(),
+                BigDecimal.valueOf(request.getPrice()),
+                Status.valueOf(request.getStatus()),
+                request.getMainImageUrl());
 
         log.info("상품 수정 완료 - productId: {}", productId);
         return ProductResponse.fromEntity(product);
