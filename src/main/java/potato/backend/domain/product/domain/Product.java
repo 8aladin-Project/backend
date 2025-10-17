@@ -31,7 +31,7 @@ public class Product extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "member_id", nullable = false) // DB의 product 테이블에 생성될 외래 키 컬럼 이름을 'member_id'로 지정
     private Member member;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -44,8 +44,8 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Lob // content의 길이를 제한하지 않음
-    @Column(nullable = false)
+    // @Lob // content의 길이를 제한하지 않음
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)
