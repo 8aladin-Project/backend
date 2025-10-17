@@ -14,7 +14,7 @@ public class ProductResponse {
     private String title;
     private String content;
     private Long price;
-    private List<Image> images;
+    private List<ImageResponse> images;
     private String status;
     private Long likeCount;
     private Long viewCount;
