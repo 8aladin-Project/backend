@@ -26,6 +26,7 @@ RUN gradle bootJar --no-daemon
 FROM alpine:3.22.1
 ENV JAVA_HOME=/opt/java
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
+ENV SPRING_PROFILES_ACTIVE=prod
 
 # glibc 설치 (Infisical CLI 실행을 위해 필요)
 RUN apk add --no-cache gcompat bash curl
@@ -41,5 +42,16 @@ COPY --from=builder /home/gradle/build/libs/*.jar /app.jar
 
 EXPOSE 8080
 
-# Infisical run으로 애플리케이션 실행
-ENTRYPOINT ["infisical", "run", "--projectId=5936eede-5b19-4d5f-84aa-e48380617257", "--env=dev", "--", "java", "-jar", "/app.jar"]
+# 엔트리포인트: 비대화형 로그인 → 주입 → 실행
+RUN printf '%s\n' '#!/bin/sh -e' \
+  'if [ -z "$INFISICAL_API_URL" ]; then' \
+  '  echo "Set INFISICAL_API_URL (예: https://infisical.example.com/api)"; exit 1; fi' \
+  'export INFISICAL_DISABLE_UPDATE_CHECK=true' \
+  'if [ -z "$INFISICAL_TOKEN" ] && [ -n "$INFISICAL_CLIENT_ID" ] && [ -n "$INFISICAL_CLIENT_SECRET" ]; then' \
+  '  INFISICAL_TOKEN=$(infisical login --method=universal-auth --client-id="$INFISICAL_CLIENT_ID" --client-secret="$INFISICAL_CLIENT_SECRET" --plain --silent); export INFISICAL_TOKEN;' \
+  'fi' \
+  'exec infisical run --projectId="${INFISICAL_PROJECT_ID:?Set INFISICAL_PROJECT_ID}" --path="${INFISICAL_PATH}" --domain "${INFISICAL_API_URL}" -- java -jar /app.jar' \
+  > /usr/local/bin/entrypoint.sh \
+ && chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
