@@ -52,6 +52,7 @@ public class Product extends BaseEntity {
     private String mainImageUrl;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Image> images = new java.util.ArrayList<>();
 
     @Column(nullable = false, precision = 18, scale = 0) // 금액 관련 부분을 DB에 명시해 DB가 원하는 자릿수를 강제
@@ -72,47 +73,52 @@ public class Product extends BaseEntity {
 
 // == 생성 메서드 ==
     public static Product create(
-            Member memberId,
-            List<Category> categoryId,
+            Member member,
+            List<Category> categories,
             String title,
             String content,
-            List<Image> images,
+            List<String> imageUrls,
             BigDecimal price,
             Status status,
             String mainImageUrl
-
     ) {
-        Objects.requireNonNull(memberId, "memberId");
-        Objects.requireNonNull(categoryId, "categoryId");
+        Objects.requireNonNull(member, "member");
+        Objects.requireNonNull(categories, "categories");
         Objects.requireNonNull(title, "title");
         Objects.requireNonNull(content, "content");
         Objects.requireNonNull(price, "price");
         Objects.requireNonNull(status, "status");
         Objects.requireNonNull(mainImageUrl, "mainImageUrl");
-        Objects.requireNonNull(images, "images");
+        Objects.requireNonNull(imageUrls, "imageUrls");
 
         if (price.signum() < 0) {
             throw new IllegalArgumentException("price must be >= 0");
         }
 
-        if (images.isEmpty()) {
-            throw new IllegalArgumentException("images must not be empty");
+        if (imageUrls.isEmpty()) {
+            throw new IllegalArgumentException("imageUrls must not be empty");
         }
 
         // scale 고정 + 반올림 모드 명시 (금융 기본: HALF_UP)
-        // 일반적으로는 원화라 정수이지만, 환율 계산 등으로 소수점이 발생할 때. 사용한다는 것을 인지하기
         BigDecimal normalized = price.setScale(0, RoundingMode.HALF_UP);
 
-        return Product.builder()
-                .member(memberId)
-                .categories(categoryId)
+        Product product = Product.builder()
+                .member(member)
+                .categories(new java.util.ArrayList<>(categories))
                 .title(title)
                 .content(content)
                 .mainImageUrl(mainImageUrl)
-                .images(images)
                 .price(normalized)
                 .status(status)
                 .build();
+
+        // 이미지 URL 문자열로부터 Image 엔티티 생성 및 추가
+        List<Image> images = imageUrls.stream()
+                .map(imageUrl -> Image.create(product, imageUrl))
+                .toList();
+        product.images.addAll(images);
+
+        return product;
     }
 
     // === proxy-safe equals/hashCode (ID가 있을 때만 동등) ===

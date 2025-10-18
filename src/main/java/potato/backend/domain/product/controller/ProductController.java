@@ -78,7 +78,7 @@ public class ProductController {
     ) {
         log.info("상품 생성 요청");
         ProductResponse product = productService.createProduct(request);
-        log.info("상품 생성 완료 - productId: {}, title: {}", product.getId(), product.getTitle());
+        log.info("상품 생성 완료 - productId: {}, title: {}", product.getProductId(), product.getTitle());
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
 
@@ -95,7 +95,7 @@ public class ProductController {
     ) {
         log.info("상품 수정 요청 - productId: {}", productId);
         ProductResponse product = productService.updateProduct(productId, request);
-        log.info("상품 수정 완료 - productId: {}, title: {}", product.getId(), product.getTitle());
+        log.info("상품 수정 완료 - productId: {}, title: {}", product.getProductId(), product.getTitle());
         return ResponseEntity.ok(product);
     }
 
@@ -114,4 +114,3 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 }
-

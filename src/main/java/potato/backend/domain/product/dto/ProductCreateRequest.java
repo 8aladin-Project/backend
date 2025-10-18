@@ -8,7 +8,6 @@ import java.util.List;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductCreateRequest {
-    private final Long id;
     private final Long memberId;
     private final String title;
     private final List<String> category;
@@ -19,7 +18,6 @@ public class ProductCreateRequest {
     private final String status;
 
     public static ProductCreateRequest of (
-            Long id,
             Long memberId,
             String title,
             List<String> category,
@@ -30,7 +28,6 @@ public class ProductCreateRequest {
             String status
     ) {
         return new ProductCreateRequest(
-                id,
                 memberId,
                 title,
                 category,
