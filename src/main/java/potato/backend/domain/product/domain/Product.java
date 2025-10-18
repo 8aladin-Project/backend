@@ -54,7 +54,7 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new java.util.ArrayList<>();
 
-    @Column(nullable = false, precision = 18, scale = 0) // 금액 관련 부분�� DB에 명시해 DB가 원하는 자릿수를 강제
+    @Column(nullable = false, precision = 18, scale = 0) // 금액 관련 부분을 DB에 명시해 DB가 원하는 자릿수를 강제
     private BigDecimal price;
 
     @Column(nullable = false)
