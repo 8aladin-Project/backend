@@ -1,6 +1,8 @@
 spring:
-  config:
-    import: optional:file:.env[.properties]
+  application:
+    name: dev-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
   datasource:
     url: ${POSTGRES_URL:jdbc:postgresql://db:5432/database}
