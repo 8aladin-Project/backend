@@ -1,7 +1,6 @@
 package potato.backend.domain.product.service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -13,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import potato.backend.domain.category.domain.Category;
 import potato.backend.domain.category.repository.CategoryRepository;
-import potato.backend.domain.image.domain.Image;
-import potato.backend.domain.image.repository.ImageRepository;
 import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.product.domain.Status;
 import potato.backend.domain.product.dto.ProductCreateRequest;
@@ -47,21 +44,18 @@ public class ProductService {
         log.info("상품 생성 시작 - title: {}, price: {}, status: {}", 
                 request.getTitle(), request.getPrice(), request.getStatus());
         
-        // TODO: Member 조회 로직 추가 (MemberRepository 필요)
         Member member = memberRepository.findById(request.getMemberId())
                  .orElseThrow(() -> new MemberNotFoundException(request.getMemberId()));
 
         List<Category> categories = categoryRepository.findByNameIn(request.getCategory());
 
-
-        List<Image> images = new ArrayList<>();
-
+        // Product.create()가 이미지 URL 문자열을 받아서 내부에서 Image 엔티티 생성
         Product product = Product.create(
                 member,
                 categories,
                 request.getTitle(),
                 request.getContent(),
-                images,
+                request.getImages(),
                 BigDecimal.valueOf(request.getPrice()),
                 Status.valueOf(request.getStatus()),
                 request.getMainImageUrl()
@@ -121,6 +115,6 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
         productRepository.delete(product);
-        log.info("상품 삭제 완료 - productId: {}", productId);
+        log.info("상품 삭제 완�� - productId: {}", productId);
     }
 }
