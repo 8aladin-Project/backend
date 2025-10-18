@@ -115,6 +115,6 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
         productRepository.delete(product);
-        log.info("상품 삭제 완�� - productId: {}", productId);
+        log.info("상품 삭제 완료 - productId: {}", productId);
     }
 }
