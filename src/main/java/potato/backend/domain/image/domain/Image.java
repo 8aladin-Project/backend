@@ -29,6 +29,13 @@ public class Image extends BaseEntity {
     private String imageUrl;
 
     public static Image create(Product product, String imageUrl) {
+        if (product == null) {
+            throw new IllegalArgumentException("Product cannot be null");
+        }
+        if (imageUrl == null || imageUrl.isBlank()) {
+            throw new IllegalArgumentException("Image URL cannot be null or empty");
+        }
+
         return Image.builder()
             .product(product)
             .imageUrl(imageUrl)
