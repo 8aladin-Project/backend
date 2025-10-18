@@ -5,24 +5,24 @@ import lombok.*;
 import java.util.List;
 
 @Getter
-@Setter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductCreateRequest {
-    private Long memberId;
-    private String title;
-    private List<String> category;
-    private String content;
-    private String mainImageUrl;
-    private List<String> images;
-    private Long price;
-    private String status;
+    private final Long id;
+    private final Long memberId;
+    private final String title;
+    private final List<String> category;
+    private final String content;
+    private final String mainImageUrl;
+    private final List<String> images;
+    private final Long price;
+    private final String status;
 
-    public static ProductCreateRequest of(
+    public static ProductCreateRequest of (
+            Long id,
             Long memberId,
-            List<String> category,
             String title,
+            List<String> category,
             String content,
             String mainImageUrl,
             List<String> images,
@@ -30,6 +30,7 @@ public class ProductCreateRequest {
             String status
     ) {
         return new ProductCreateRequest(
+                id,
                 memberId,
                 title,
                 category,

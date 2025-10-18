@@ -11,8 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import potato.backend.domain.category.Category;
+import potato.backend.domain.category.domain.Category;
+import potato.backend.domain.category.repository.CategoryRepository;
 import potato.backend.domain.image.domain.Image;
+import potato.backend.domain.image.repository.ImageRepository;
 import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.product.domain.Status;
 import potato.backend.domain.product.dto.ProductCreateRequest;
@@ -22,6 +24,8 @@ import potato.backend.domain.product.dto.ProductUpdateRequest;
 import potato.backend.domain.product.exception.ProductNotFoundException;
 import potato.backend.domain.product.repository.ProductRepository;
 import potato.backend.domain.user.domain.Member;
+import potato.backend.domain.user.exception.MemberNotFoundException;
+import potato.backend.domain.user.repository.MemberRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,10 @@ import potato.backend.domain.user.domain.Member;
 public class ProductService {
 
     private final ProductRepository productRepository;
+
+    private final MemberRepository memberRepository;
+
+    private final CategoryRepository categoryRepository;
 
     /**
      * 상품 생성
@@ -40,16 +48,13 @@ public class ProductService {
                 request.getTitle(), request.getPrice(), request.getStatus());
         
         // TODO: Member 조회 로직 추가 (MemberRepository 필요)
-        // Member member = memberRepository.findById(request.getMemberId())
-        //         .orElseThrow(() -> new MemberNotFoundException());
-        Member member = null; // 임시 - MemberRepository 연동 필요
+        Member member = memberRepository.findById(request.getMemberId())
+                 .orElseThrow(() -> new MemberNotFoundException(request.getMemberId()));
 
-        // TODO: Category 조회 로직 추가 (CategoryRepository 필요)
-        // List<Category> categories = categoryRepository.findByNameIn(request.getCategory());
-        List<Category> categories = new ArrayList<>(); // 임시
+        List<Category> categories = categoryRepository.findByNameIn(request.getCategory());
 
-        // TODO: Image 엔티티 생성 로직 추가
-        List<Image> images = new ArrayList<>(); // 임시
+
+        List<Image> images = new ArrayList<>();
 
         Product product = Product.create(
                 member,
@@ -94,12 +99,14 @@ public class ProductService {
      */
     @Transactional
     public ProductResponse updateProduct(Long productId, ProductUpdateRequest request) {
-        log.info("상품 수정 시작 - productId: {}, title: {}", productId, request.getTitle());
+        log.info("상품 수정 시작 - productId: {}", productId);
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
-        // TODO: Product 엔티티에 update 메서드 추가 필요
-        // product.update(request.getTitle(), request.getContent(), ...);
+        product.update(request.getTitle(), request.getContent(),
+                BigDecimal.valueOf(request.getPrice()),
+                Status.valueOf(request.getStatus()),
+                request.getMainImageUrl());
 
         log.info("상품 수정 완료 - productId: {}", productId);
         return ProductResponse.fromEntity(product);

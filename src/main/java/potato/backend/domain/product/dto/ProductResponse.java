@@ -1,8 +1,8 @@
 package potato.backend.domain.product.dto;
 
 import lombok.Getter;
-import potato.backend.domain.category.Category;
-import potato.backend.domain.image.dto.ImageResponse;
+import potato.backend.domain.category.domain.Category;
+import potato.backend.domain.image.domain.Image;
 import potato.backend.domain.product.domain.Product;
 
 import java.util.List;

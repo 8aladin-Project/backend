@@ -19,5 +19,24 @@ public class ProductUpdateRequest {
     private String content;
     private String mainImageUrl;
     private List<String> imageUrls;
+    private Long price;
     private String status;
+
+    public static ProductUpdateRequest of (
+            String title,
+            String content,
+            String mainImageUrl,
+            List<String> imageUrls,
+            Long price,
+            String status
+    ) {
+        return new ProductUpdateRequest(
+                title,
+                content,
+                mainImageUrl,
+                imageUrls,
+                price,
+                status
+        );
+    }
 }

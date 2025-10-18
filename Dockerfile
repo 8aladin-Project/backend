@@ -27,10 +27,19 @@ FROM alpine:3.22.1
 ENV JAVA_HOME=/opt/java
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
+# glibc 설치 (Infisical CLI 실행을 위해 필요)
+RUN apk add --no-cache gcompat bash curl
+
+# Infisical CLI 설치
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.alpine.sh' | bash \
+    && apk add --no-cache infisical
+
 COPY --from=builder-jre /custom-jre /opt/java
 
 # Spring Boot 기본 설정상 단일 부트 JAR만 생성된다는 가정
 COPY --from=builder /home/gradle/build/libs/*.jar /app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app.jar"]
+
+# Infisical run으로 애플리케이션 실행
+ENTRYPOINT ["infisical", "run", "--projectId=5936eede-5b19-4d5f-84aa-e48380617257", "--env=dev", "--", "java", "-jar", "/app.jar"]

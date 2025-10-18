@@ -1,4 +1,4 @@
-package potato.backend.domain.category;
+package potato.backend.domain.category.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
