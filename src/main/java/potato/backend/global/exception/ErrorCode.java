@@ -37,6 +37,14 @@ public enum ErrorCode {
     IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 업로드에 실패했습니다"),
     IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "이미지를 찾을 수 없습니다"),
     FILE_SIZE_EXCEEDED(HttpStatus.PAYLOAD_TOO_LARGE, "업로드 파일 크기가 제한을 초과했습니다"),
+
+    // Chat
+    CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다"),
+    CHAT_MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "메시지를 찾을 수 없습니다"),
+    CHAT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 사용자를 찾을 수 없습니다"),
+    CHAT_PARTICIPANT_NOT_FOUND(HttpStatus.FORBIDDEN, "채팅방에 참여할 권한이 없습니다"),
+    INVALID_CHAT_ROOM_PARTICIPANTS(HttpStatus.BAD_REQUEST, "채팅방 참가자가 유효하지 않습니다"),
+
     INVALID_ARGUMENT(HttpStatus.BAD_REQUEST, "유효하지 않은 인자입니다")
     ;
     private final HttpStatus httpStatus;
