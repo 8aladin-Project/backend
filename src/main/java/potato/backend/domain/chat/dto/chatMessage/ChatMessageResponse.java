@@ -1,4 +1,4 @@
-package potato.backend.domain.chat.dto;
+package potato.backend.domain.chat.dto.chatMessage;
 
 import java.time.Instant;
 
@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import potato.backend.domain.chat.domain.ChatMessage;
 
-// 채팅 메시지 응답 DTO
+// 채팅 메시지 조회 응답 DTO
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
