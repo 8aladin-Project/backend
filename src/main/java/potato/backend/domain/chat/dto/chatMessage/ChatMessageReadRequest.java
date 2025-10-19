@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 // 채팅 메시지 읽음 요청 DTO
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChatMessageReadRequest {
 
     private Long messageId; // 읽음 처리할 메시지 ID
