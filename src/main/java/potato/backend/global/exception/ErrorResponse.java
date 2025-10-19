@@ -1,6 +1,14 @@
 package potato.backend.global.exception;
 
-public record ErrorResponse(String errorCodeName, String errorMessage) {
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "오류 응답")
+public record ErrorResponse(
+    @Schema(description = "오류 코드 이름")
+    String errorCodeName,
+    @Schema(description = "오류 메시지")
+    String errorMessage
+) {
     public static ErrorResponse of(ErrorCode errorCode) {
         return new ErrorResponse(errorCode.name(), errorCode.getMessage());
     }

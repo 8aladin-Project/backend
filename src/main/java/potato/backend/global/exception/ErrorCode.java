@@ -44,6 +44,7 @@ public enum ErrorCode {
     CHAT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 사용자를 찾을 수 없습니다"),
     CHAT_PARTICIPANT_NOT_FOUND(HttpStatus.FORBIDDEN, "채팅방에 참여할 권한이 없습니다"),
     INVALID_CHAT_ROOM_PARTICIPANTS(HttpStatus.BAD_REQUEST, "채팅방 참가자가 유효하지 않습니다"),
+    CHAT_MESSAGE_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 메시지입니다"),
 
     INVALID_ARGUMENT(HttpStatus.BAD_REQUEST, "유효하지 않은 인자입니다")
     ;

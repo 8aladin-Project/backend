@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import lombok.extern.slf4j.Slf4j;
+import potato.backend.domain.chat.exception.ChatMessageInvalidException;
 import potato.backend.domain.chat.exception.ChatMessageNotFoundException;
 import potato.backend.domain.chat.exception.ChatParticipantNotFoundException;
 import potato.backend.domain.chat.exception.ChatRoomNotFoundException;
@@ -183,6 +184,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         logByType(e);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(ErrorCode.INVALID_CHAT_ROOM_PARTICIPANTS, e.getMessage()));
+    }
+
+    @ExceptionHandler(ChatMessageInvalidException.class)
+    public ResponseEntity<ErrorResponse> handleChatMessageInvalidException(ChatMessageInvalidException e) {
+        logByType(e);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(ErrorCode.CHAT_MESSAGE_INVALID, e.getMessage()));
     }
 
     /* ===================== 업로드/일반 파라미터 예외 ===================== */
