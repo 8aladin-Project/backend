@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChatReadResponse {
 
     private Long messageId;     // 읽음 처리된 메시지 ID (단일 메시지 읽음 처리 시)
