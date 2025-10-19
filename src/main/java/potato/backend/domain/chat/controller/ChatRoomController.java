@@ -22,11 +22,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import potato.backend.domain.chat.dto.ChatRoomCreateRequest;
-import potato.backend.domain.chat.dto.ChatRoomResponse;
+import potato.backend.domain.chat.dto.chatMessage.ChatRoomCreateRequest;
+import potato.backend.domain.chat.dto.chatRoom.ChatRoomResponse;
 import potato.backend.domain.chat.service.ChatRoomService;
 
-@RestController
+/**
+ * 채팅방 컨트롤러
+ */
+@RestController 
 @Validated
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/chatrooms")
@@ -36,9 +39,11 @@ public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
 
+    // TODO: 예외코드, 예외처리 도입후 Swagger에 Response body 추가 
     /**
      * 채팅방 생성 메서드
-     * @param request
+     * @param request 채팅방 생성 요청 DTO
+     * @return 채팅방 생성 결과
      * @return
      */
     @Operation(summary = "채팅방 생성 API", description = "판매자와 구매자의 아이디를 기준으로 새로운 채팅방을 생성합니다.")
@@ -54,8 +59,8 @@ public class ChatRoomController {
 
     /**
      * 채팅방 단건 조회 메서드
-     * @param chatRoomId
-     * @return
+     * @param chatRoomId 채팅방 아이디
+     * @return 채팅방 조회 결과
      */
     @Operation(summary = "채팅방 단건 조회 API", description = "채팅방 ID로 단일 채팅방 정보를 조회합니다.")
     @ApiResponses({
@@ -69,14 +74,14 @@ public class ChatRoomController {
 
     /**
      * memberId를 기준으로 채팅방 목록 조회 메서드
-     * @param memberId
-     * @return
+     * @param memberId 회원 아이디
+     * @return 채팅방 목록
      */
     @Operation(summary = "채팅방 목록 조회 API", description = "memberId를 기준으로 해당 회원이 참여 중인 채팅방을 필터링하여 반환합니다.")
     @ApiResponse(responseCode = "200", description = "목록 조회 성공")
     @GetMapping
     public List<ChatRoomResponse> getChatRooms(
-            @Parameter(description = "회원 ID. 지정 시 참여 중인 채팅방만 반환합니다.")
+            @Parameter(description = "회원 ID, 참여 중인 채팅방만 반환합니다.")
             @RequestParam(name = "memberId", required = false) Long memberId) {
         return chatRoomService.getChatRooms(memberId);
     }
