@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 // 읽지 않은 메시지 개수 조회 응답 DTO
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChatUnreadCountResponse {
 
     private Long memberId;      // 사용자 ID
