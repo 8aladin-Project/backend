@@ -66,8 +66,8 @@ public class ChatMessage extends BaseEntity {
         this.sender = sender;
     }
 
-    // Persist 시점에 대한 처리
-    @PrePersist
+    // chatMessage 엔티티가 DB에 저장되기 직전에 자동으로 실행되는 메서드
+    @PrePersist // 엔티티가 처음 저장(persist, INSERT)되는 상황에서 실행됨
     protected void onPersist() {
         if (this.sentAt == null) {
             this.sentAt = Instant.now();
@@ -76,6 +76,7 @@ public class ChatMessage extends BaseEntity {
     }
 
     // 유효성 검사 메서드
+    // TODO: 런타임 커스텀 예외처리 추가
     private static void validateParticipant(Member participant, ChatRoom chatRoom) {
         if (participant == null) {
             throw new IllegalStateException("Chat message sender must not be null");
