@@ -16,9 +16,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
     /**
      * 판매자와 구매자를 기준으로 채팅방을 조회하는 메서드
-     * @param seller
-     * @param buyer
-     * @return
+     * @param seller 판매자(아이디)
+     * @param buyer 구매자(아이디)
+     * @return 채팅방
      */
     @Query("select cr from ChatRoom cr where cr.seller = :seller and cr.buyer = :buyer")
     Optional<ChatRoom> findByParticipants(@Param("seller") Member seller, @Param("buyer") Member buyer);
@@ -27,7 +27,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     /**
      * memberId를 기준으로 채팅방 목록을 조회하는 메서드
      * @param memberId
-     * @return
+     * @return 해당 유저(판매자 혹은 구매자)가 참여한 채팅방 목록
      */
     @Query("select cr from ChatRoom cr where cr.seller.id = :memberId or cr.buyer.id = :memberId")
     List<ChatRoom> findAllByMemberId(@Param("memberId") Long memberId);
