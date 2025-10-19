@@ -1,11 +1,20 @@
 package potato.backend.domain.chat.controller;
 
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +27,7 @@ import potato.backend.domain.chat.dto.chatRoom.ChatRoomReadRequest;
 import potato.backend.domain.chat.service.ChatMessageService;
 
 import java.util.Map;
+import potato.backend.global.exception.ErrorResponse;
 
 /**
  * 채팅 메시지 컨트롤러
@@ -27,6 +37,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/v1/chat")
+@Tag(name = "ChatMessages", description = "채팅 메시지 관리 API")
 public class ChatMessageController {
 
     private static final String TOPIC_PREFIX = "/topic/chat/"; // 클라이언트가 구독하는 채널 주소 앞 부분
@@ -34,7 +45,6 @@ public class ChatMessageController {
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate; // 스프링에 제공하는 메시지 전송 도구
 
-    // TODO: Swagger 커스텀 문서화, 예외처리 응답 바디 추가
     /**
      * 메시지 전송/수신을 처리하는 메서드
      * @param roomId 채팅방 아이디
@@ -61,8 +71,53 @@ public class ChatMessageController {
      * @param request 읽음 처리 요청 정보 (memberId 포함)
      * @return 읽음 처리 결과
      */
+    @Operation(summary = "메시지 읽음 처리 API", description = "특정 메시지를 읽음 처리합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                responseCode = "200",
+                description = "읽음 처리 성공",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ChatReadResponse.class))
+            ),
+            @ApiResponse(
+                responseCode = "400",
+                description = "잘못된 요청 (요청 값 검증 실패)",
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                        name = "INVALID_ARGUMENT",
+                        value = "{\"errorCodeName\":\"INVALID_ARGUMENT\",\"errorMessage\":\"유효하지 않은 인자입니다\"}"
+                    )
+                )
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "메시지를 찾을 수 없음 (CHAT_MESSAGE_NOT_FOUND)",
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                        name = "CHAT_MESSAGE_NOT_FOUND",
+                        value = "{\"errorCodeName\":\"CHAT_MESSAGE_NOT_FOUND\",\"errorMessage\":\"메시지를 찾을 수 없습니다\"}"
+                    )
+                )
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "서버 내부 오류",
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(
+                        name = "INTERNAL_SERVER_ERROR",
+                        value = "{\"errorCodeName\":\"INTERNAL_SERVER_ERROR\",\"errorMessage\":\"서버 내부 오류입니다\"}"
+                    )
+                )
+            )
+    })
     @PutMapping("/messages/{messageId}/read")
     public ResponseEntity<ChatReadResponse> markMessageAsRead(
+            @Parameter(description = "읽음 처리할 메시지 ID", required = true)
             @PathVariable Long messageId,
             @RequestBody ChatMessageReadRequest request) {
 
@@ -76,8 +131,7 @@ public class ChatMessageController {
 
         } catch (Exception e) {
             log.error("메시지 읽음 처리 실패: messageId={}, error={}", messageId, e.getMessage());
-            ChatReadResponse readResponse = ChatReadResponse.ofMessage(messageId, request.getMemberId(), false);
-            return ResponseEntity.badRequest().body(readResponse);
+            throw e; // GlobalExceptionHandler에서 처리하도록 예외를 다시 throw
         }
     }
 
@@ -87,8 +141,71 @@ public class ChatMessageController {
      * @param request 읽음 처리 요청 정보 (memberId 포함)
      * @return 읽음 처리 결과
      */
+    @Operation(summary = "채팅방 전체 메시지 읽음 처리 API", description = "채팅방의 모든 메시지를 읽음 처리합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                responseCode = "200",
+                description = "읽음 처리 성공",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ChatReadResponse.class))
+            ),
+            @ApiResponse(
+                responseCode = "400",
+                description = "잘못된 요청 (요청 값 검증 실패)",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "INVALID_ARGUMENT",
+                                value = "{\"errorCodeName\":\"INVALID_ARGUMENT\",\"errorMessage\":\"유효하지 않은 인자입니다\"}"
+                        )
+                )
+            ),
+            @ApiResponse(
+                responseCode = "403",
+                description = "채팅방 접근 권한 없음 (CHAT_PARTICIPANT_NOT_FOUND)",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "CHAT_PARTICIPANT_NOT_FOUND",
+                                value = "{\"errorCodeName\":\"CHAT_PARTICIPANT_NOT_FOUND\",\"errorMessage\":\"채팅방에 참여할 권한이 없습니다\"}"
+                        )
+                )
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "채팅방 또는 사용자를 찾을 수 없음",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = {
+                                @ExampleObject(
+                                        name = "CHAT_ROOM_NOT_FOUND",
+                                        value = "{\"errorCodeName\":\"CHAT_ROOM_NOT_FOUND\",\"errorMessage\":\"채팅방을 찾을 수 없습니다\"}"
+                                ),
+                                @ExampleObject(
+                                        name = "CHAT_MEMBER_NOT_FOUND",
+                                        value = "{\"errorCodeName\":\"CHAT_MEMBER_NOT_FOUND\",\"errorMessage\":\"채팅 사용자를 찾을 수 없습니다\"}"
+                                )
+                        }
+                )
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "서버 내부 오류",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "INTERNAL_SERVER_ERROR",
+                                value = "{\"errorCodeName\":\"INTERNAL_SERVER_ERROR\",\"errorMessage\":\"서버 내부 오류입니다\"}"
+                        )
+                )
+            )
+    })
     @PutMapping("/rooms/{roomId}/read")
     public ResponseEntity<ChatReadResponse> markAllMessagesAsReadInRoom(
+            @Parameter(description = "읽음 처리할 채팅방 ID", required = true)
             @PathVariable Long roomId,
             @RequestBody ChatRoomReadRequest request) {
 
@@ -103,8 +220,7 @@ public class ChatMessageController {
 
         } catch (Exception e) {
             log.error("채팅방 전체 메시지 읽음 처리 실패: roomId={}, error={}", roomId, e.getMessage());
-            ChatReadResponse readResponse = ChatReadResponse.ofRoom(roomId, request.getMemberId(), 0, false);
-            return ResponseEntity.badRequest().body(readResponse);
+            throw e; // GlobalExceptionHandler에서 처리하도록 예외를 다시 throw
         }
     }
 
@@ -113,8 +229,54 @@ public class ChatMessageController {
      * @param memberId 사용자 ID
      * @return 읽지 않은 메시지 개수
      */
+    @Operation(summary = "전체 읽지 않은 메시지 개수 조회 API", description = "사용자의 전체 읽지 않은 메시지 개수를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                responseCode = "200",
+                description = "조회 성공",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ChatUnreadCountResponse.class))
+            ),
+            @ApiResponse(
+                responseCode = "400",
+                description = "잘못된 요청 (요청 값 검증 실패)",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "INVALID_ARGUMENT",
+                                value = "{\"errorCodeName\":\"INVALID_ARGUMENT\",\"errorMessage\":\"유효하지 않은 인자입니다\"}"
+                        )
+                )
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "사용자를 찾을 수 없음",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "CHAT_MEMBER_NOT_FOUND",
+                                value = "{\"errorCodeName\":\"CHAT_MEMBER_NOT_FOUND\",\"errorMessage\":\"채팅 사용자를 찾을 수 없습니다\"}"
+                        )
+                )
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "서버 내부 오류",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "INTERNAL_SERVER_ERROR",
+                                value = "{\"errorCodeName\":\"INTERNAL_SERVER_ERROR\",\"errorMessage\":\"서버 내부 오류입니다\"}"
+                        )
+                )
+            )
+    })
     @GetMapping("/messages/unread-count")
-    public ResponseEntity<ChatUnreadCountResponse> getUnreadMessageCount(@RequestParam Long memberId) {
+    public ResponseEntity<ChatUnreadCountResponse> getUnreadMessageCount(
+            @Parameter(description = "읽지 않은 메시지 개수를 조회할 사용자 ID", required = true)
+            @RequestParam Long memberId) {
         log.info("읽지 않은 메시지 개수 조회 요청: memberId={}", memberId);
 
         try {
@@ -126,7 +288,7 @@ public class ChatMessageController {
 
         } catch (Exception e) {
             log.error("읽지 않은 메시지 개수 조회 실패: memberId={}, error={}", memberId, e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw e; // GlobalExceptionHandler에서 처리하도록 예외를 다시 throw
         }
     }
 
@@ -136,9 +298,73 @@ public class ChatMessageController {
      * @param memberId 사용자 ID
      * @return 읽지 않은 메시지 개수
      */
+    @Operation(summary = "채팅방 읽지 않은 메시지 개수 조회 API", description = "특정 채팅방의 읽지 않은 메시지 개수를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                responseCode = "200",
+                description = "조회 성공",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ChatUnreadCountResponse.class))
+            ),
+            @ApiResponse(
+                responseCode = "400",
+                description = "잘못된 요청 (요청 값 검증 실패)",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "INVALID_ARGUMENT",
+                                value = "{\"errorCodeName\":\"INVALID_ARGUMENT\",\"errorMessage\":\"유효하지 않은 인자입니다\"}"
+                        )
+                )
+            ),
+            @ApiResponse(
+                responseCode = "403",
+                description = "채팅방 접근 권한 없음",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "CHAT_PARTICIPANT_NOT_FOUND",
+                                value = "{\"errorCodeName\":\"CHAT_PARTICIPANT_NOT_FOUND\",\"errorMessage\":\"채팅방에 참여할 권한이 없습니다\"}"
+                        )
+                )
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "채팅방 또는 사용자를 찾을 수 없음",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = {
+                                @ExampleObject(
+                                        name = "CHAT_ROOM_NOT_FOUND",
+                                        value = "{\"errorCodeName\":\"CHAT_ROOM_NOT_FOUND\",\"errorMessage\":\"채팅방을 찾을 수 없습니다\"}"
+                                ),
+                                @ExampleObject(
+                                        name = "CHAT_MEMBER_NOT_FOUND",
+                                        value = "{\"errorCodeName\":\"CHAT_MEMBER_NOT_FOUND\",\"errorMessage\":\"채팅 사용자를 찾을 수 없습니다\"}"
+                                )
+                        }
+                )
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "서버 내부 오류",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "INTERNAL_SERVER_ERROR",
+                                value = "{\"errorCodeName\":\"INTERNAL_SERVER_ERROR\",\"errorMessage\":\"서버 내부 오류입니다\"}"
+                        )
+                )
+            )
+    })
     @GetMapping("/rooms/{roomId}/unread-count")
     public ResponseEntity<ChatUnreadCountResponse> getUnreadMessageCountInRoom(
+            @Parameter(description = "읽지 않은 메시지 개수를 조회할 채팅방 ID", required = true)
             @PathVariable Long roomId,
+            @Parameter(description = "읽지 않은 메시지 개수를 조회할 사용자 ID", required = true)
             @RequestParam Long memberId) {
 
         log.info("채팅방 읽지 않은 메시지 개수 조회 요청: roomId={}, memberId={}", roomId, memberId);
@@ -152,7 +378,7 @@ public class ChatMessageController {
 
         } catch (Exception e) {
             log.error("채팅방 읽지 않은 메시지 개수 조회 실패: roomId={}, memberId={}, error={}", roomId, memberId, e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw e; // GlobalExceptionHandler에서 처리하도록 예외를 다시 throw
         }
     }
 }
