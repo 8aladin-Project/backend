@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 // 채팅방 전체 메시지 읽음 요청 DTO
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChatRoomReadRequest {
 
     private Long roomId;   // 채팅방 ID
