@@ -1,8 +1,6 @@
 spring:
   application:
-    name: session
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+    name: product-backend
 
   jackson:
     property-naming-strategy: SNAKE_CASE
@@ -12,6 +10,12 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
     default-property-inclusion: non_null
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
 
   # OAuth2 Client
   security:
@@ -65,12 +69,6 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.orm.jdbc.bind: TRACE
 
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 10MB
-      max-request-size: 50MB
-
 # AWS S3 Configuration
 cloud:
   aws:
@@ -83,7 +81,7 @@ cloud:
       bucket: ${AWS_S3_BUCKET:your-bucket-name}
       endpoint: ${AWS_S3_ENDPOINT:#{null}}  # MinIO 등 사용 시 설정
       path-style: ${AWS_S3_PATH_STYLE:false}  # MinIO 사용 시 true
-            
+
 jwt:
   public-key: ${JWT_PUBLIC_KEY}
   private-key: ${JWT_PRIVATE_KEY}

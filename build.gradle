@@ -33,6 +33,10 @@ dependencies {
 	// WebSocket
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+	// Actuator for monitoring
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
+
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     // AWS SDK v2 - S3
