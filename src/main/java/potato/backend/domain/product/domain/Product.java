@@ -114,7 +114,11 @@ public class Product extends BaseEntity {
 
         // 이미지 URL 문자열로부터 Image 엔티티 생성 및 추가
         List<Image> images = imageUrls.stream()
-                .map(imageUrl -> Image.create(product, imageUrl))
+                .map(imageUrl -> {
+                    Image image = Image.create(imageUrl);
+                    image.setProduct(product);
+                    return image;
+                })
                 .toList();
         product.images.addAll(images);
 
