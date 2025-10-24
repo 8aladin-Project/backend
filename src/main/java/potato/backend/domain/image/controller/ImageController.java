@@ -37,23 +37,22 @@ public class ImageController {
             @Parameter(description = "상품 ID") @RequestParam Long productId,
             @Parameter(description = "업로드할 이미지 파일들") @RequestParam("images") List<MultipartFile> images
     ) {
-        log.info("이미지 다중 업로드 요청 - productId: {}, 이미지 개수: {}", productId, images.size());
-        List<ImageResponse> responses = imageService.uploadImages(productId, images);
-        log.info("이미지 다중 업로드 완료 - productId: {}, 업로드된 이미지 개수: {}", productId, responses.size());
+        log.info("이미지 다중 업로드 요청 - 이미지 개수: {}", images.size());
+        List<ImageResponse> responses = imageService.uploadImages( images);
+        log.info("이미지 다중 업로드 완료 - 업로드된 이미지 개수: {}", responses.size());
         return ResponseEntity.status(HttpStatus.CREATED).body(responses);
     }
     
     @PostMapping(value = "/upload/single", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "단일 이미지 업로드", description = "상품에 대한 단일 이미지를 업로드합니다.")
     public ResponseEntity<ImageResponse> uploadImage(
-            @Parameter(description = "상품 ID") @RequestParam Long productId,
             @Parameter(description = "업로드할 이미지 파일") @RequestParam("image") MultipartFile image
     ) {
-        log.info("이미지 단일 업로드 요청 - productId: {}, 파일명: {}, 파일 크기: {} bytes", 
-                productId, image.getOriginalFilename(), image.getSize());
-        ImageResponse response = imageService.uploadImage(productId, image);
-        log.info("이미지 단일 업로드 완료 - productId: {}, imageId: {}, imageUrl: {}", 
-                productId, response.id(), response.imageUrl());
+        log.info("이미지 단일 업로드 요청 - 파일명: {}, 파일 크기: {} bytes",
+                image.getOriginalFilename(), image.getSize());
+        ImageResponse response = imageService.uploadImage(image);
+        log.info("이미지 단일 업로드 완료 - imageId: {}, imageUrl: {}",
+                response.id(), response.imageUrl());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     

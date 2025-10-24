@@ -22,23 +22,24 @@ public class Image extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id")
     private Product product;
 
     @Column(nullable = false)
     private String imageUrl;
 
-    public static Image create(Product product, String imageUrl) {
-        if (product == null) {
-            throw new IllegalArgumentException("Product cannot be null");
-        }
+    public static Image create(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) {
             throw new IllegalArgumentException("Image URL cannot be null or empty");
         }
 
         return Image.builder()
-            .product(product)
             .imageUrl(imageUrl)
             .build();
+    }
+
+    // Product와의 연관관계 설정
+    public void setProduct(Product product) {
+        this.product = product;
     }
 }

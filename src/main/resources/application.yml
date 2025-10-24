@@ -1,6 +1,8 @@
 spring:
   application:
-    name: product-backend
+    name: session
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
   jackson:
     property-naming-strategy: SNAKE_CASE
@@ -11,11 +13,45 @@ spring:
       fail-on-unknown-properties: false
     default-property-inclusion: non_null
 
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        highlight_sql: true
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        use_sql_comments: true
+
+# Logging Configuration
+logging:
+  level:
+    potato.backend.domain.product: DEBUG
+    potato.backend.domain.image: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.orm.jdbc.bind: TRACE
+
   servlet:
     multipart:
       enabled: true
       max-file-size: 10MB
       max-request-size: 50MB
+
+# AWS S3 Configuration
+cloud:
+  aws:
+    s3:
+      enabled: ${AWS_S3_ENABLED:false}  # S3 비활성화 (필요시 true로 설정)
+      bucket: ${AWS_S3_BUCKET:your-bucket-name}
+      endpoint: ${AWS_S3_ENDPOINT:#{null}}  # MinIO 등 사용 시 설정
+      path-style: ${AWS_S3_PATH_STYLE:false}  # MinIO 사용 시 true
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:your-access-key}
+      secret-key: ${AWS_SECRET_KEY:your-secret-key}
+    region:
+      static: ${AWS_REGION:ap-northeast-2}
 
   # OAuth2 Client
   security:
@@ -59,32 +95,17 @@ spring:
             token-uri: https://kapi.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
-        
-# Logging Configuration
-logging:
-  level:
-    potato.backend.domain.product: DEBUG
-    potato.backend.domain.image: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.hibernate.orm.jdbc.bind: TRACE
-
-# AWS S3 Configuration
-cloud:
-  aws:
-    credentials:
-      access-key: ${AWS_ACCESS_KEY:your-access-key}
-      secret-key: ${AWS_SECRET_KEY:your-secret-key}
-    region:
-      static: ${AWS_REGION:ap-northeast-2}
-    s3:
-      bucket: ${AWS_S3_BUCKET:your-bucket-name}
-      endpoint: ${AWS_S3_ENDPOINT:#{null}}  # MinIO 등 사용 시 설정
-      path-style: ${AWS_S3_PATH_STYLE:false}  # MinIO 사용 시 true
 
 jwt:
   public-key: ${JWT_PUBLIC_KEY}
   private-key: ${JWT_PRIVATE_KEY}
+
+# Infisical Configuration
+infisical:
+  enabled: ${INFISICAL_ENABLED:true}  # Infisical 비활성화 (필요시 true로 설정)
+  project-id: ${INFISICAL_PROJECT_ID:5936eede-5b19-4d5f-84aa-e48380617257}
+  environment: ${INFISICAL_ENVIRONMENT:dev}
+  secrets-path: ${INFISICAL_SECRETS_PATH:/}
 
 
 management:

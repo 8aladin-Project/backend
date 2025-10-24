@@ -33,15 +33,12 @@ public class ImageService {
      * 이미지 업로드 및 저장
      */
     @Transactional
-    public List<ImageResponse> uploadImages(Long productId, List<MultipartFile> files) {
-        log.info("이미지 업로드 시작 - productId: {}, 파일 개수: {}", productId, files.size());
+    public List<ImageResponse> uploadImages(List<MultipartFile> files) {
+        log.info("이미지 업로드 시작 - productId: {}, 파일 개수: {}",files.size());
         
         if (s3Service == null) {
             throw new IllegalStateException("S3 서비스가 활성화되지 않았습니다. cloud.aws.s3.enabled=true로 설정해주세요.");
         }
-        
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + productId));
         
         // S3에 파일 업로드
         log.debug("S3에 {} 개의 파일 업로드 시작", files.size());
@@ -51,12 +48,12 @@ public class ImageService {
         // DB에 이미지 정보 저장
         List<Image> images = imageUrls.stream()
                 .map(url -> {
-                    Image image = Image.create(product, url);
+                    Image image = Image.create(url);
                     return imageRepository.save(image);
                 })
                 .toList();
         
-        log.info("이미지 업로드 완료 - productId: {}, 저장된 이미지 개수: {}", productId, images.size());
+        log.info("이미지 업로드 완료 - productId: {}, 저장된 이미지 개수: {}", images.size());
         return ImageResponse.fromList(images);
     }
     
@@ -64,25 +61,22 @@ public class ImageService {
      * 단일 이미지 업로드
      */
     @Transactional
-    public ImageResponse uploadImage(Long productId, MultipartFile file) {
-        log.info("단일 이미지 업로드 시작 - productId: {}, 파일명: {}", productId, file.getOriginalFilename());
+    public ImageResponse uploadImage(MultipartFile file) {
+        log.info("단일 이미지 업로드 시작 - productId: {}, 파일명: {}", file.getOriginalFilename());
         
         if (s3Service == null) {
             throw new IllegalStateException("S3 서비스가 활성화되지 않았습니다. cloud.aws.s3.enabled=true로 설정해주세요.");
         }
         
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + productId));
-        
         log.debug("S3에 파일 업로드 시작 - 파일명: {}", file.getOriginalFilename());
         String imageUrl = s3Service.uploadFile(file);
         log.debug("S3 업로드 완료 - imageUrl: {}", imageUrl);
         
-        Image image = Image.create(product, imageUrl);
+        Image image = Image.create(imageUrl);
         Image savedImage = imageRepository.save(image);
         
         log.info("단일 이미지 업로드 완료 - productId: {}, imageId: {}, imageUrl: {}", 
-                productId, savedImage.getId(), savedImage.getImageUrl());
+                  savedImage.getId(), savedImage.getImageUrl());
         return ImageResponse.from(savedImage);
     }
     

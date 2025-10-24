@@ -7,9 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.constraints.NotNull;
 
 public record ImageRequest(
-        @NotNull(message = "상품 ID는 필수입니다")
-        Long productId,
-        
         @NotNull(message = "이미지 파일은 필수입니다")
         List<MultipartFile> images
 ) {
