@@ -10,6 +10,11 @@ import java.util.Objects;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SequenceGenerator(
+    name = "category_seq",
+    sequenceName = "category_seq",
+    allocationSize = 50
+)
 public class Category {
 
     @Id
