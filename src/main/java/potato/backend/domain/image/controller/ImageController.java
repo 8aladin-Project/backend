@@ -37,7 +37,7 @@ public class ImageController {
             @Parameter(description = "업로드할 이미지 파일들") @RequestParam("images") List<MultipartFile> images
     ) {
         log.info("이미지 다중 업로드 요청 - 이미지 개수: {}", images.size());
-        List<ImageResponse> responses = imageService.uploadImages( images);
+        List<ImageResponse> responses = imageService.uploadImages(images);
         log.info("이미지 다중 업로드 완료 - 업로드된 이미지 개수: {}", responses.size());
         return ResponseEntity.status(HttpStatus.CREATED).body(responses);
     }
