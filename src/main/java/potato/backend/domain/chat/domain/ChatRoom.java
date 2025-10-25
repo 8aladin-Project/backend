@@ -3,6 +3,7 @@ package potato.backend.domain.chat.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import potato.backend.domain.common.domain.BaseEntity;
+import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.user.domain.Member;
 
 import java.util.ArrayList;
@@ -29,10 +30,9 @@ public class ChatRoom extends BaseEntity {
     @JoinColumn(name = "buyer_id", nullable = false)
     private Member buyer; // 구매를 시도하는 사용자
 
-    // product 엔티티 구현시 주석 해제
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "product_id", nullable = false)
-    // private Long productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -40,6 +40,15 @@ public class ChatRoom extends BaseEntity {
 
 
     // ChatRoom 생성자
+    public static ChatRoom create(Member seller, Member buyer, Product product) {
+        return ChatRoom.builder()
+                .seller(seller)
+                .buyer(buyer)
+                .product(product)
+                .build();
+    }
+
+    // ChatRoom 생성자 (product 없이)
     public static ChatRoom create(Member seller, Member buyer) {
         return ChatRoom.builder()
                 .seller(seller)
@@ -53,6 +62,7 @@ public class ChatRoom extends BaseEntity {
         message.assignChatRoom(this);
     }
 
+    // 채팅방 참여자 확인 메서드
     public boolean isParticipant(Member member) {
         return member != null && (member.equals(seller) || member.equals(buyer));
     }

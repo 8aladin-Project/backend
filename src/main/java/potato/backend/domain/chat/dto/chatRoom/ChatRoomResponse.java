@@ -1,4 +1,4 @@
-package potato.backend.domain.chat.dto;
+package potato.backend.domain.chat.dto.chatRoom;
 
 import java.time.Instant;
 
@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import potato.backend.domain.chat.domain.ChatRoom;
 
+// 채팅방 조회 응답 DTO
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,6 +21,8 @@ public class ChatRoomResponse {
     private String sellerName;
     private Long buyerId;
     private String buyerName;
+    private Long productId;
+    private String productTitle;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -30,6 +33,8 @@ public class ChatRoomResponse {
                 .sellerName(chatRoom.getSeller().getName())
                 .buyerId(chatRoom.getBuyer().getId())
                 .buyerName(chatRoom.getBuyer().getName())
+                .productId(chatRoom.getProduct() != null ? chatRoom.getProduct().getId() : null)
+                .productTitle(chatRoom.getProduct() != null ? chatRoom.getProduct().getTitle() : null)
                 .createdAt(chatRoom.getCreatedAt())
                 .updatedAt(chatRoom.getUpdatedAt())
                 .build();

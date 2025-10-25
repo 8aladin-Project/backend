@@ -1,4 +1,4 @@
-package potato.backend.domain.chat.dto;
+package potato.backend.domain.chat.dto.chatMessage;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -20,7 +20,7 @@ public class ChatRoomCreateRequest {
 
     @Schema(name = "seller_id", description = "판매자 회원 식별자", example = "1")
     @NotNull
-    @Positive
+    @Positive // 해당 값은 양수만 허용
     private Long sellerId;
 
     @Schema(name = "buyer_id", description = "구매자 회원 식별자", example = "2")
@@ -28,8 +28,17 @@ public class ChatRoomCreateRequest {
     @Positive
     private Long buyerId;
 
+    @Schema(name = "product_id", description = "상품 식별자", example = "1")
+    @NotNull
+    @Positive
+    private Long productId;
 
-    public static ChatRoomCreateRequest of(Long sellerId, Long buyerId) {
-        return new ChatRoomCreateRequest(sellerId, buyerId);
+
+    public static ChatRoomCreateRequest of(Long sellerId, Long buyerId, Long productId) {
+        return ChatRoomCreateRequest.builder()
+                .sellerId(sellerId)
+                .buyerId(buyerId)
+                .productId(productId)
+                .build();
     }
 }

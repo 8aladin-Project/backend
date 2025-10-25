@@ -2,6 +2,8 @@ package potato.backend.domain.chat.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import potato.backend.domain.chat.exception.ChatMessageInvalidException;
+import potato.backend.domain.chat.exception.ChatParticipantNotFoundException;
 import potato.backend.domain.common.domain.BaseEntity;
 import potato.backend.domain.user.domain.Member;
 
@@ -66,8 +68,8 @@ public class ChatMessage extends BaseEntity {
         this.sender = sender;
     }
 
-    // Persist 시점에 대한 처리
-    @PrePersist
+    // chatMessage 엔티티가 DB에 저장되기 직전에 자동으로 실행되는 메서드
+    @PrePersist // 엔티티가 처음 저장(persist, INSERT)되는 상황에서 실행됨
     protected void onPersist() {
         if (this.sentAt == null) {
             this.sentAt = Instant.now();
@@ -78,13 +80,13 @@ public class ChatMessage extends BaseEntity {
     // 유효성 검사 메서드
     private static void validateParticipant(Member participant, ChatRoom chatRoom) {
         if (participant == null) {
-            throw new IllegalStateException("Chat message sender must not be null");
+            throw new ChatMessageInvalidException("메시지 발신자는 null일 수 없습니다");
         }
         if (chatRoom == null) {
-            throw new IllegalStateException("Chat message chat room must not be null");
+            throw new ChatMessageInvalidException("메시지 채팅방은 null일 수 없습니다");
         }
         if (!chatRoom.isParticipant(participant)) {
-            throw new IllegalArgumentException("Sender is not a participant of the chat room");
+            throw new ChatParticipantNotFoundException("발신자가 채팅방에 참여하지 않았습니다");
         }
     }
 }

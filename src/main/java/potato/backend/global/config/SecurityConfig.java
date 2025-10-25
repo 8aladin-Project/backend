@@ -57,8 +57,11 @@ public class SecurityConfig {
                                 "/ws-chat/**",  // WebSocket 엔드포인트 허용
                                 "/ws-chat",     // SockJS 엔드포인트 허용
                                 "/api/v1/wishlists/**",  // 위시리스트 API 임시 허용
+                                "/api/v1/chatrooms/**",  // 채팅 API 임시 허용
+                                "/api/v1/chat/**"  // 채팅 API 임시 허용
                                 "/api/v1/images/**",  // 이미지 업로드 API 허용
                                 "/api/v1/products/**"  // 상품 API 허용
+
                         ).permitAll()
                         .anyRequest().authenticated() // 개발용
                 );
