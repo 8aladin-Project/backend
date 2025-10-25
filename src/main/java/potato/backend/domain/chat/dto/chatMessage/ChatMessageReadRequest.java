@@ -14,12 +14,10 @@ import lombok.NoArgsConstructor;
 public class ChatMessageReadRequest {
 
     private Long messageId; // 읽음 처리할 메시지 ID
-    private Long memberId;  // 읽은 사용자 ID
 
-    public static ChatMessageReadRequest of(Long messageId, Long memberId) {
+    public static ChatMessageReadRequest of(Long messageId) {
         return ChatMessageReadRequest.builder()
                 .messageId(messageId)
-                .memberId(memberId)
                 .build();
     }
 }

@@ -25,6 +25,7 @@ import potato.backend.domain.chat.dto.chatMessage.ChatSendRequest;
 import potato.backend.domain.chat.dto.chatMessage.ChatUnreadCountResponse;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomReadRequest;
 import potato.backend.domain.chat.service.ChatMessageService;
+import potato.backend.global.util.MemberUtil;
 
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class ChatMessageController {
 
     private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate; // 스프링에 제공하는 메시지 전송 도구
+    private final MemberUtil memberUtil;
 
     /**
      * 메시지 전송/수신을 처리하는 메서드
@@ -69,7 +71,7 @@ public class ChatMessageController {
     /**
      * 특정 메시지를 읽음 처리하는 API
      * @param messageId 읽음 처리할 메시지 ID
-     * @param request 읽음 처리 요청 정보 (memberId 포함)
+     * @param request 읽음 처리 요청 정보
      * @return 읽음 처리 결과
      */
     @Operation(summary = "메시지 읽음 처리 API", description = "특정 메시지를 읽음 처리합니다.")
@@ -122,13 +124,14 @@ public class ChatMessageController {
             @PathVariable Long messageId,
             @Valid @RequestBody ChatMessageReadRequest request) {
 
-        log.info("메시지 읽음 처리 요청: messageId={}, memberId={}", messageId, request.getMemberId());
+        Long authenticatedMemberId = memberUtil.getCurrentUser().memberId();
+        log.info("메시지 읽음 처리 요청: messageId={}, authenticatedMemberId={}", messageId, authenticatedMemberId);
 
         try {
-            ChatMessageResponse messageResponse = chatMessageService.markMessageAsRead(messageId, request.getMemberId());
+            ChatMessageResponse messageResponse = chatMessageService.markMessageAsRead(messageId, authenticatedMemberId);
             ChatReadResponse readResponse = ChatReadResponse.ofMessage(
                 messageResponse.getMessageId(),
-                request.getMemberId(),
+                authenticatedMemberId,
                 messageResponse.isRead()
             );
 
@@ -144,7 +147,7 @@ public class ChatMessageController {
     /**
      * 채팅방의 모든 메시지를 읽음 처리하는 API
      * @param roomId 채팅방 ID
-     * @param request 읽음 처리 요청 정보 (memberId 포함)
+     * @param request 읽음 처리 요청 정보
      * @return 읽음 처리 결과
      */
     @Operation(summary = "채팅방 전체 메시지 읽음 처리 API", description = "채팅방의 모든 메시지를 읽음 처리합니다.")
@@ -215,11 +218,12 @@ public class ChatMessageController {
             @PathVariable Long roomId,
             @RequestBody ChatRoomReadRequest request) {
 
-        log.info("채팅방 전체 메시지 읽음 처리 요청: roomId={}, memberId={}", roomId, request.getMemberId());
+        Long authenticatedMemberId = memberUtil.getCurrentUser().memberId();
+        log.info("채팅방 전체 메시지 읽음 처리 요청: roomId={}, authenticatedMemberId={}", roomId, authenticatedMemberId);
 
         try {
-            int readCount = chatMessageService.markAllMessagesAsReadInRoom(roomId, request.getMemberId());
-            ChatReadResponse readResponse = ChatReadResponse.ofRoom(roomId, request.getMemberId(), readCount, true);
+            int readCount = chatMessageService.markAllMessagesAsReadInRoom(roomId, authenticatedMemberId);
+            ChatReadResponse readResponse = ChatReadResponse.ofRoom(roomId, authenticatedMemberId, readCount, true);
 
             log.info("채팅방 전체 메시지 읽음 처리 완료: roomId={}, readCount={}", roomId, readCount);
             return ResponseEntity.ok(readResponse);
@@ -231,8 +235,7 @@ public class ChatMessageController {
     }
 
     /**
-     * 사용자의 전체 읽지 않은 메시지 개수를 조회하는 API
-     * @param memberId 사용자 ID
+     * 현재 사용자의 전체 읽지 않은 메시지 개수를 조회하는 API
      * @return 읽지 않은 메시지 개수
      */
     @Operation(summary = "전체 읽지 않은 메시지 개수 조회 API", description = "사용자의 전체 읽지 않은 메시지 개수를 조회합니다.")
@@ -280,28 +283,26 @@ public class ChatMessageController {
             )
     })
     @GetMapping("/messages/unread-count")
-    public ResponseEntity<ChatUnreadCountResponse> getUnreadMessageCount(
-            @Parameter(description = "읽지 않은 메시지 개수를 조회할 사용자 ID", required = true)
-            @RequestParam Long memberId) {
-        log.info("읽지 않은 메시지 개수 조회 요청: memberId={}", memberId);
+    public ResponseEntity<ChatUnreadCountResponse> getUnreadMessageCount() {
+        Long authenticatedMemberId = memberUtil.getCurrentUser().memberId();
+        log.info("읽지 않은 메시지 개수 조회 요청: authenticatedMemberId={}", authenticatedMemberId);
 
         try {
-            long unreadCount = chatMessageService.getUnreadMessageCount(memberId);
-            ChatUnreadCountResponse response = ChatUnreadCountResponse.ofTotal(memberId, unreadCount);
+            long unreadCount = chatMessageService.getUnreadMessageCount(authenticatedMemberId);
+            ChatUnreadCountResponse response = ChatUnreadCountResponse.ofTotal(authenticatedMemberId, unreadCount);
 
-            log.info("읽지 않은 메시지 개수 조회 완료: memberId={}, count={}", memberId, unreadCount);
+            log.info("읽지 않은 메시지 개수 조회 완료: authenticatedMemberId={}, count={}", authenticatedMemberId, unreadCount);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("읽지 않은 메시지 개수 조회 실패: memberId={}, error={}", memberId, e.getMessage());
+            log.error("읽지 않은 메시지 개수 조회 실패: authenticatedMemberId={}, error={}", authenticatedMemberId, e.getMessage());
             throw e; // GlobalExceptionHandler에서 처리하도록 예외를 다시 throw
         }
     }
 
     /**
-     * 채팅방의 읽지 않은 메시지 개수를 조회하는 API
+     * 현재 사용자가 특정 채팅방에서 읽지 않은 메시지 개수를 조회하는 API
      * @param roomId 채팅방 ID
-     * @param memberId 사용자 ID
      * @return 읽지 않은 메시지 개수
      */
     @Operation(summary = "채팅방 읽지 않은 메시지 개수 조회 API", description = "특정 채팅방의 읽지 않은 메시지 개수를 조회합니다.")
@@ -369,21 +370,20 @@ public class ChatMessageController {
     @GetMapping("/rooms/{roomId}/unread-count")
     public ResponseEntity<ChatUnreadCountResponse> getUnreadMessageCountInRoom(
             @Parameter(description = "읽지 않은 메시지 개수를 조회할 채팅방 ID", required = true)
-            @PathVariable Long roomId,
-            @Parameter(description = "읽지 않은 메시지 개수를 조회할 사용자 ID", required = true)
-            @RequestParam Long memberId) {
+            @PathVariable Long roomId) {
 
-        log.info("채팅방 읽지 않은 메시지 개수 조회 요청: roomId={}, memberId={}", roomId, memberId);
+        Long authenticatedMemberId = memberUtil.getCurrentUser().memberId();
+        log.info("채팅방 읽지 않은 메시지 개수 조회 요청: roomId={}, authenticatedMemberId={}", roomId, authenticatedMemberId);
 
         try {
-            long unreadCount = chatMessageService.getUnreadMessageCountInRoom(roomId, memberId);
-            ChatUnreadCountResponse response = ChatUnreadCountResponse.ofRoom(memberId, roomId, unreadCount);
+            long unreadCount = chatMessageService.getUnreadMessageCountInRoom(roomId, authenticatedMemberId);
+            ChatUnreadCountResponse response = ChatUnreadCountResponse.ofRoom(authenticatedMemberId, roomId, unreadCount);
 
-            log.info("채팅방 읽지 않은 메시지 개수 조회 완료: roomId={}, memberId={}, count={}", roomId, memberId, unreadCount);
+            log.info("채팅방 읽지 않은 메시지 개수 조회 완료: roomId={}, authenticatedMemberId={}, count={}", roomId, authenticatedMemberId, unreadCount);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("채팅방 읽지 않은 메시지 개수 조회 실패: roomId={}, memberId={}, error={}", roomId, memberId, e.getMessage());
+            log.error("채팅방 읽지 않은 메시지 개수 조회 실패: roomId={}, authenticatedMemberId={}, error={}", roomId, authenticatedMemberId, e.getMessage());
             throw e; // GlobalExceptionHandler에서 처리하도록 예외를 다시 throw
         }
     }
