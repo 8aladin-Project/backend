@@ -50,7 +50,7 @@ public class ImageService {
      */
     @Transactional
     public List<ImageResponse> uploadImages(List<MultipartFile> files) {
-        log.info("이미지 업로드 시작 - productId: {}, 파일 개수: {}",files.size());
+        log.info("이미지 업로드 시작 - 파일 개수: {}",files.size());
         
         if (s3Service == null) {
             throw new IllegalStateException("S3 서비스가 활성화되지 않았습니다. cloud.aws.s3.enabled=true로 설정해주세요.");
