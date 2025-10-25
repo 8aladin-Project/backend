@@ -1,7 +1,7 @@
 package potato.backend.domain.product.dto;
 
 import lombok.Getter;
-import potato.backend.domain.category.Category;
+import potato.backend.domain.category.domain.Category;
 import potato.backend.domain.product.domain.Product;
 
 import java.time.Instant;
@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 @Getter
 public class ProductListResponse {
-    private Long id;
+    private Long productId;
     private List<String> category;
     private String title;
     private Long price;
@@ -23,7 +23,7 @@ public class ProductListResponse {
 
     public static ProductListResponse fromEntity(Product product) {
         ProductListResponse response = new ProductListResponse();
-        response.id = product.getId();
+        response.productId = product.getId();
         response.title = product.getTitle();
         response.category = product.getCategories()
                 .stream()
@@ -39,7 +39,3 @@ public class ProductListResponse {
         return response;
     }
 }
-
-
-
-
