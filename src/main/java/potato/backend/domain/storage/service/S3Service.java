@@ -63,6 +63,10 @@ public class S3Service {
         String key = "images/" + uniqueFileName;
         
         try {
+        // debug logging: request details
+        log.debug("Preparing to upload file to S3 - bucket: {}, key: {}, size: {}, contentType: {}", 
+            bucketName, key, file.getSize(), file.getContentType());
+
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
@@ -80,11 +84,49 @@ public class S3Service {
             return fileUrl;
             
         } catch (S3Exception e) {
-            log.error("S3 upload failed for file: {} - {}", originalFilename, e.awsErrorDetails().errorMessage(), e);
-            throw new ImageUploadException("S3 업로드 실패: " + e.awsErrorDetails().errorMessage(), e);
+            String errorMsg = null;
+            try {
+                if (e.awsErrorDetails() != null) {
+                    errorMsg = e.awsErrorDetails().errorMessage();
+                }
+            } catch (Exception ignore) {
+            }
+            if (errorMsg == null) {
+                errorMsg = e.getMessage() != null ? e.getMessage() : e.toString();
+            }
+            log.error("S3 upload failed for file: {} - awsErrorDetails: {}, statusCode: {}, exception: ",
+                    originalFilename,
+                    e.awsErrorDetails(),
+                    e.statusCode(),
+                    e);
+            throw new ImageUploadException("S3 업로드 실패: " + errorMsg, e);
         } catch (IOException e) {
             log.error("Failed to read file: {}", originalFilename, e);
             throw new ImageUploadException("파일 읽기 실패: " + originalFilename, e);
+        } catch (Exception e) {
+            log.error("Unexpected error during file upload: {}", originalFilename, e);
+            throw new ImageUploadException("파일 업로드 중 예상치 못한 오류: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 디버그용: S3에 연결하여 버킷 리스트를 반환합니다.
+     */
+    public String listBucketsForDebug() {
+        try {
+            var response = s3Client.listBuckets();
+            var names = response.buckets().stream()
+                    .map(b -> b.name())
+                    .toList();
+            log.info("S3 buckets: {}", names);
+            return "Buckets: " + names.toString();
+        } catch (S3Exception e) {
+            String msg = e.awsErrorDetails() != null ? e.awsErrorDetails().errorMessage() : e.getMessage();
+            log.error("listBuckets failed: {}", msg, e);
+            return "listBuckets failed: " + (msg != null ? msg : e.toString());
+        } catch (Exception e) {
+            log.error("Unexpected error listing buckets", e);
+            return "Unexpected error: " + e.toString();
         }
     }
     
@@ -123,8 +165,14 @@ public class S3Service {
             log.info("File deleted successfully - key: {}, url: {}", key, fileUrl);
             
         } catch (S3Exception e) {
-            log.error("S3 delete failed for url: {} - {}", fileUrl, e.awsErrorDetails().errorMessage(), e);
-            throw new ImageUploadException("S3 삭제 실패: " + e.awsErrorDetails().errorMessage(), e);
+            String err = null;
+            try {
+                if (e.awsErrorDetails() != null) err = e.awsErrorDetails().errorMessage();
+            } catch (Exception ignore) {
+            }
+            if (err == null) err = e.getMessage() != null ? e.getMessage() : e.toString();
+            log.error("S3 delete failed for url: {} - {}", fileUrl, err, e);
+            throw new ImageUploadException("S3 삭제 실패: " + err, e);
         }
     }
     
