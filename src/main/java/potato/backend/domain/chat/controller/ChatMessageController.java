@@ -26,6 +26,7 @@ import potato.backend.domain.chat.dto.chatMessage.ChatUnreadCountResponse;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomReadRequest;
 import potato.backend.domain.chat.service.ChatMessageService;
 
+import jakarta.validation.Valid;
 import java.util.Map;
 import potato.backend.global.exception.ErrorResponse;
 
@@ -119,12 +120,17 @@ public class ChatMessageController {
     public ResponseEntity<ChatReadResponse> markMessageAsRead(
             @Parameter(description = "읽음 처리할 메시지 ID", required = true)
             @PathVariable Long messageId,
-            @RequestBody ChatMessageReadRequest request) {
+            @Valid @RequestBody ChatMessageReadRequest request) {
 
         log.info("메시지 읽음 처리 요청: messageId={}, memberId={}", messageId, request.getMemberId());
 
         try {
-            ChatReadResponse readResponse = ChatReadResponse.ofMessage(messageId, request.getMemberId(), true);
+            ChatMessageResponse messageResponse = chatMessageService.markMessageAsRead(messageId, request.getMemberId());
+            ChatReadResponse readResponse = ChatReadResponse.ofMessage(
+                messageResponse.getMessageId(),
+                request.getMemberId(),
+                messageResponse.isRead()
+            );
 
             log.info("메시지 읽음 처리 완료: messageId={}", messageId);
             return ResponseEntity.ok(readResponse);
