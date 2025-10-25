@@ -63,7 +63,7 @@ public class S3Service {
         String key = "images/" + uniqueFileName;
         
         try {
-        // debug logging: request details
+        // Debug logging: request details
         log.debug("Preparing to upload file to S3 - bucket: {}, key: {}, size: {}, contentType: {}", 
             bucketName, key, file.getSize(), file.getContentType());
 
