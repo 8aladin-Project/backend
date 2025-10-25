@@ -48,11 +48,11 @@ class ImageRepositoryTest {
     @BeforeEach
     void setUp() throws IOException {
         // 테스트용 이미지 파일 경로 설정
-        testImagePath1 = new ClassPathResource("images/test-image-1.jpg").getFile().getAbsolutePath();
-        testImagePath2 = new ClassPathResource("images/test-image-2.jpg").getFile().getAbsolutePath();
-        productImagePath1 = new ClassPathResource("images/product-image-1.jpg").getFile().getAbsolutePath();
-        productImagePath2 = new ClassPathResource("images/product-image-2.jpg").getFile().getAbsolutePath();
-        productImagePath3 = new ClassPathResource("images/product-image-3.jpg").getFile().getAbsolutePath();
+        testImagePath1 = new ClassPathResource("images/test-image-2.png").getFile().getAbsolutePath();
+        testImagePath2 = new ClassPathResource("images/test-image-3.png").getFile().getAbsolutePath();
+        productImagePath1 = new ClassPathResource("images/test-image-4.png").getFile().getAbsolutePath();
+        productImagePath2 = new ClassPathResource("images/test-image-5.png").getFile().getAbsolutePath();
+        productImagePath3 = new ClassPathResource("images/test-image-6.png").getFile().getAbsolutePath();
 
         // 테스트용 회원 생성
         Member testMember = Member.create("테스트유저", "test@example.com", "hashedPassword", "010-1234-5678");
@@ -80,7 +80,7 @@ class ImageRepositoryTest {
     @DisplayName("이미지 생성 및 저장 테스트")
     void createAndSaveImage() throws IOException {
         // given
-        String imageUrl = new ClassPathResource("images/test-image-3.jpg").getFile().getAbsolutePath();
+        String imageUrl = new ClassPathResource("images/test-image-3.png").getFile().getAbsolutePath();
         Image image = Image.create(imageUrl);
 
         // when
@@ -90,7 +90,7 @@ class ImageRepositoryTest {
         assertThat(savedImage).isNotNull();
         assertThat(savedImage.getId()).isNotNull();
         assertThat(savedImage.getImageUrl()).isEqualTo(imageUrl);
-        assertThat(savedImage.getImageUrl()).contains("test-image-3.jpg");
+        assertThat(savedImage.getImageUrl()).contains("test-image-3.png");
     }
 
     @Test
@@ -131,7 +131,7 @@ class ImageRepositoryTest {
     @DisplayName("이미지 삭제 테스트")
     void deleteImage() throws IOException {
         // given
-        String deleteImagePath = new ClassPathResource("images/delete-image.jpg").getFile().getAbsolutePath();
+        String deleteImagePath = new ClassPathResource("images/test-image-4.png").getFile().getAbsolutePath();
         Image image = Image.create(deleteImagePath);
         Image savedImage = imageRepository.save(image);
         Long imageId = savedImage.getId();
@@ -147,9 +147,9 @@ class ImageRepositoryTest {
     @DisplayName("여러 이미지 일괄 저장 테스트")
     void saveAllImages() throws IOException {
         // given
-        String bulkImage1 = new ClassPathResource("images/bulk-image-1.jpg").getFile().getAbsolutePath();
-        String bulkImage2 = new ClassPathResource("images/bulk-image-2.jpg").getFile().getAbsolutePath();
-        String bulkImage3 = new ClassPathResource("images/bulk-image-3.jpg").getFile().getAbsolutePath();
+        String bulkImage1 = new ClassPathResource("images/test-image-2.png").getFile().getAbsolutePath();
+        String bulkImage2 = new ClassPathResource("images/test-image-3.png").getFile().getAbsolutePath();
+        String bulkImage3 = new ClassPathResource("images/test-image-4.png").getFile().getAbsolutePath();
 
         List<Image> images = List.of(
                 Image.create(bulkImage1),
@@ -171,8 +171,8 @@ class ImageRepositoryTest {
     @DisplayName("이미지 개수 조회 테스트")
     void countImages() throws IOException {
         // given
-        String countImage1 = new ClassPathResource("images/count-image-1.jpg").getFile().getAbsolutePath();
-        String countImage2 = new ClassPathResource("images/count-image-2.jpg").getFile().getAbsolutePath();
+        String countImage1 = new ClassPathResource("images/test-image-5.png").getFile().getAbsolutePath();
+        String countImage2 = new ClassPathResource("images/test-image-6.png").getFile().getAbsolutePath();
 
         Image image1 = Image.create(countImage1);
         Image image2 = Image.create(countImage2);

@@ -1,5 +1,6 @@
 package potato.backend.domain.image;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +96,7 @@ class ImageDomainTest {
      */
     @SpringBootTest
     @ActiveProfiles("test")
+    @Disabled("S3 실제 연결이 필요한 통합 테스트 - CI/CD 환경에서는 비활성화")
     @DisplayName("S3 이미지 업로드 통합 테스트")
     static class S3ImageUploadTest {
 
