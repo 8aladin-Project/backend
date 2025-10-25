@@ -90,7 +90,6 @@ public class ImageService {
         
         Image image = Image.create(imageUrl);
         Image savedImage = imageRepository.save(image);
-        
         log.info("단일 이미지 업로드 완료 - imageId: {}, imageUrl: {}", 
                   savedImage.getId(), savedImage.getImageUrl());
         return ImageResponse.from(savedImage);
