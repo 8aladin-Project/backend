@@ -253,7 +253,7 @@ class ImageDomainTest {
             Path imagePath = Paths.get("src/test/resources/images/" + filename);
 
             if (!Files.exists(imagePath)) {
-                throw new IllegalArgumentException("테스트 이미지 ���일을 찾을 수 없습니다: " + imagePath);
+                throw new IllegalArgumentException("테스트 이미지 파일을 찾을 수 없습니다: " + imagePath);
             }
 
             InputStream inputStream = Files.newInputStream(imagePath);
