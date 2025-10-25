@@ -24,7 +24,7 @@ import potato.backend.domain.image.service.ImageService;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/images")
+@RequestMapping("/api/v1/images")
 @RequiredArgsConstructor
 @Tag(name = "Image", description = "이미지 관리 API")
 public class ImageController {
@@ -34,7 +34,6 @@ public class ImageController {
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "이미지 업로드", description = "상품에 대한 이미지를 업로드합니다.")
     public ResponseEntity<List<ImageResponse>> uploadImages(
-            @Parameter(description = "상품 ID") @RequestParam Long productId,
             @Parameter(description = "업로드할 이미지 파일들") @RequestParam("images") List<MultipartFile> images
     ) {
         log.info("이미지 다중 업로드 요청 - 이미지 개수: {}", images.size());
@@ -55,6 +54,13 @@ public class ImageController {
                 response.id(), response.imageUrl());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+        @GetMapping("/debug/s3")
+        @Operation(summary = "S3 연결 확인 (디버그)", description = "S3 연결 및 권한을 간단히 체크합니다.")
+        public ResponseEntity<String> checkS3() {
+                String result = imageService.checkS3Connection();
+                return ResponseEntity.ok(result);
+        }
     
     @GetMapping("/product/{productId}")
     @Operation(summary = "상품 이미지 조회", description = "특정 상품의 모든 이미지를 조회합니다.")

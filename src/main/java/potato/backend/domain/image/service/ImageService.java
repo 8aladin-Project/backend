@@ -28,6 +28,22 @@ public class ImageService {
     
     @Autowired(required = false)
     private S3Service s3Service;
+
+    /**
+     * S3 연결 및 권한 체크 (디버그용)
+     */
+    public String checkS3Connection() {
+        if (s3Service == null) {
+            return "S3 service not enabled";
+        }
+
+        try {
+            return s3Service.listBucketsForDebug();
+        } catch (Exception e) {
+            log.error("S3 connection check failed", e);
+            return "S3 connection check failed: " + e.toString();
+        }
+    }
     
     /**
      * 이미지 업로드 및 저장
