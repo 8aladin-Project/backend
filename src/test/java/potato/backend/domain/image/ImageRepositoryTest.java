@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.core.io.ClassPathResource;
 import potato.backend.domain.category.domain.Category;
 import potato.backend.domain.category.repository.CategoryRepository;
 import potato.backend.domain.image.domain.Image;
@@ -15,6 +16,7 @@ import potato.backend.domain.product.repository.ProductRepository;
 import potato.backend.domain.user.domain.Member;
 import potato.backend.domain.user.repository.MemberRepository;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -37,9 +39,21 @@ class ImageRepositoryTest {
     private CategoryRepository categoryRepository;
 
     private Product testProduct;
+    private String testImagePath1;
+    private String testImagePath2;
+    private String productImagePath1;
+    private String productImagePath2;
+    private String productImagePath3;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
+        // 테스트용 이미지 파일 경로 설정
+        testImagePath1 = new ClassPathResource("images/test-image-2.png").getFile().getAbsolutePath();
+        testImagePath2 = new ClassPathResource("images/test-image-3.png").getFile().getAbsolutePath();
+        productImagePath1 = new ClassPathResource("images/test-image-4.png").getFile().getAbsolutePath();
+        productImagePath2 = new ClassPathResource("images/test-image-5.png").getFile().getAbsolutePath();
+        productImagePath3 = new ClassPathResource("images/test-image-6.png").getFile().getAbsolutePath();
+
         // 테스트용 회원 생성
         Member testMember = Member.create("테스트유저", "test@example.com", "hashedPassword", "010-1234-5678");
         memberRepository.save(testMember);
@@ -48,25 +62,26 @@ class ImageRepositoryTest {
         Category testCategory = Category.create("전자기기");
         categoryRepository.save(testCategory);
 
-        // 테스트용 상품 생성
+        // 테스트용 상품 생성 (실제 이미지 경로 사용)
         testProduct = Product.create(
                 testMember,
                 List.of(testCategory),
                 "테스트 상품",
                 "테스트 설명",
-                List.of("image1.jpg", "image2.jpg"),
+                List.of(testImagePath1, testImagePath2),
                 BigDecimal.valueOf(100000),
                 Status.SELLING,
-                "main.jpg"
+                testImagePath1
         );
         productRepository.save(testProduct);
     }
 
     @Test
     @DisplayName("이미지 생성 및 저장 테스트")
-    void createAndSaveImage() {
+    void createAndSaveImage() throws IOException {
         // given
-        Image image = Image.create(testProduct, "test-image.jpg");
+        String imageUrl = new ClassPathResource("images/test-image-3.png").getFile().getAbsolutePath();
+        Image image = Image.create(imageUrl);
 
         // when
         Image savedImage = imageRepository.save(image);
@@ -74,26 +89,26 @@ class ImageRepositoryTest {
         // then
         assertThat(savedImage).isNotNull();
         assertThat(savedImage.getId()).isNotNull();
-        assertThat(savedImage.getImageUrl()).isEqualTo("test-image.jpg");
-        assertThat(savedImage.getProduct()).isEqualTo(testProduct);
+        assertThat(savedImage.getImageUrl()).isEqualTo(imageUrl);
+        assertThat(savedImage.getImageUrl()).contains("test-image-3.png");
     }
 
     @Test
     @DisplayName("상품으로 이미지 목록 조회 테스트")
     void findByProduct() {
         // given
-        Image image1 = Image.create(testProduct, "product-image-1.jpg");
-        Image image2 = Image.create(testProduct, "product-image-2.jpg");
-        Image image3 = Image.create(testProduct, "product-image-3.jpg");
+        Image image1 = Image.create(productImagePath1);
+        Image image2 = Image.create(productImagePath2);
+        Image image3 = Image.create(productImagePath3);
         imageRepository.saveAll(List.of(image1, image2, image3));
 
         // when
         List<Image> images = imageRepository.findByProduct(testProduct);
 
         // then
-        assertThat(images).hasSize(5); // setUp에서 생성된 2개 + 새로 추가된 3개
+        assertThat(images).hasSize(2); // setUp에서 생성된 2개
         assertThat(images).extracting(Image::getImageUrl)
-                .contains("product-image-1.jpg", "product-image-2.jpg", "product-image-3.jpg");
+                .contains(testImagePath1, testImagePath2);
     }
 
     @Test
@@ -108,13 +123,16 @@ class ImageRepositoryTest {
         // then
         assertThat(images).hasSize(2); // setUp에서 생성된 2개
         assertThat(images).allMatch(image -> image.getProduct().getId().equals(productId));
+        assertThat(images).extracting(Image::getImageUrl)
+                .contains(testImagePath1, testImagePath2);
     }
 
     @Test
     @DisplayName("이미지 삭제 테스트")
-    void deleteImage() {
+    void deleteImage() throws IOException {
         // given
-        Image image = Image.create(testProduct, "delete-image.jpg");
+        String deleteImagePath = new ClassPathResource("images/test-image-4.png").getFile().getAbsolutePath();
+        Image image = Image.create(deleteImagePath);
         Image savedImage = imageRepository.save(image);
         Long imageId = savedImage.getId();
 
@@ -127,12 +145,16 @@ class ImageRepositoryTest {
 
     @Test
     @DisplayName("여러 이미지 일괄 저장 테스트")
-    void saveAllImages() {
+    void saveAllImages() throws IOException {
         // given
+        String bulkImage1 = new ClassPathResource("images/test-image-2.png").getFile().getAbsolutePath();
+        String bulkImage2 = new ClassPathResource("images/test-image-3.png").getFile().getAbsolutePath();
+        String bulkImage3 = new ClassPathResource("images/test-image-4.png").getFile().getAbsolutePath();
+
         List<Image> images = List.of(
-                Image.create(testProduct, "bulk-image-1.jpg"),
-                Image.create(testProduct, "bulk-image-2.jpg"),
-                Image.create(testProduct, "bulk-image-3.jpg")
+                Image.create(bulkImage1),
+                Image.create(bulkImage2),
+                Image.create(bulkImage3)
         );
 
         // when
@@ -141,14 +163,19 @@ class ImageRepositoryTest {
         // then
         assertThat(savedImages).hasSize(3);
         assertThat(savedImages).allMatch(image -> image.getId() != null);
+        assertThat(savedImages).extracting(Image::getImageUrl)
+                .contains(bulkImage1, bulkImage2, bulkImage3);
     }
 
     @Test
     @DisplayName("이미지 개수 조회 테스트")
-    void countImages() {
+    void countImages() throws IOException {
         // given
-        Image image1 = Image.create(testProduct, "count-image-1.jpg");
-        Image image2 = Image.create(testProduct, "count-image-2.jpg");
+        String countImage1 = new ClassPathResource("images/test-image-5.png").getFile().getAbsolutePath();
+        String countImage2 = new ClassPathResource("images/test-image-6.png").getFile().getAbsolutePath();
+
+        Image image1 = Image.create(countImage1);
+        Image image2 = Image.create(countImage2);
         imageRepository.saveAll(List.of(image1, image2));
 
         // when
@@ -158,4 +185,3 @@ class ImageRepositoryTest {
         assertThat(count).isEqualTo(4); // setUp에서 생성된 2개 + 새로 추가된 2개
     }
 }
-
