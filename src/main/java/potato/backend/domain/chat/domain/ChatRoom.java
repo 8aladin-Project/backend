@@ -32,7 +32,7 @@ public class ChatRoom extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    private Product productId;
+    private Product product;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -40,6 +40,15 @@ public class ChatRoom extends BaseEntity {
 
 
     // ChatRoom 생성자
+    public static ChatRoom create(Member seller, Member buyer, Product product) {
+        return ChatRoom.builder()
+                .seller(seller)
+                .buyer(buyer)
+                .product(product)
+                .build();
+    }
+
+    // ChatRoom 생성자 (product 없이)
     public static ChatRoom create(Member seller, Member buyer) {
         return ChatRoom.builder()
                 .seller(seller)
