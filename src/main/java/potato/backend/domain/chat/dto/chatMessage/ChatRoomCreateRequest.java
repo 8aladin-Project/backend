@@ -41,11 +41,4 @@ public class ChatRoomCreateRequest {
                 .productId(productId)
                 .build();
     }
-
-    public static ChatRoomCreateRequest of(Long sellerId, Long buyerId) {
-        return ChatRoomCreateRequest.builder()
-                .sellerId(sellerId)
-                .buyerId(buyerId)
-                .build();
-    }
 }
