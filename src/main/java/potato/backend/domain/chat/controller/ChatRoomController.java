@@ -43,7 +43,6 @@ public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
 
-    // TODO: 예외코드, 예외처리 도입후 Swagger에 Response body 추가 
     /**
      * 채팅방 생성 메서드
      * @param request 채팅방 생성 요청 DTO
