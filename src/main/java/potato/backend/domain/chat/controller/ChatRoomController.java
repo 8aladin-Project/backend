@@ -48,7 +48,7 @@ public class ChatRoomController {
      * @param request 채팅방 생성 요청 DTO
      * @return 채팅방 생성 결과
      */
-    @Operation(summary = "채팅방 생성 API", description = "판매자와 구매자의 아이디를 기준으로 새로운 채팅방을 생성합니다.")
+    @Operation(summary = "채팅방 생성 API", description = "판매자, 구매자, 상품의 아이디를 기준으로 새로운 채팅방을 생성합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "채팅방 생성 성공"),
             @ApiResponse(
