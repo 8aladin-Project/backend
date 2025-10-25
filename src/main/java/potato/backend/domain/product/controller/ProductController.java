@@ -28,7 +28,7 @@ import potato.backend.domain.product.service.ProductService;
 
 @Tag(name = "Product", description = "상품 관리 API")
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
 @Slf4j
 public class ProductController {
