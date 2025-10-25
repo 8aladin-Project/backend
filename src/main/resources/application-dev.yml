@@ -34,3 +34,8 @@ spring:
           max-active: 8
           max-idle: 8
           min-idle: 0
+
+# Infisical 설정 (Dev 환경)
+# dev 환경에서는 자동으로 SDK 방식 사용
+infisical:
+  environment: dev

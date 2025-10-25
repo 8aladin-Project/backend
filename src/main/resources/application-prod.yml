@@ -63,3 +63,8 @@ logging:
     com.zaxxer.hikari: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Infisical 설정 (Production 환경)
+# prod 환경에서는 자동으로 CLI 방식 사용 (ProcessBuilder 기반)
+infisical:
+  environment: prod

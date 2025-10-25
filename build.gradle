@@ -73,8 +73,11 @@ dependencies {
 	// Google Guava (for URL validation)
 	implementation 'com.google.guava:guava:33.3.1-jre'
 
-	// Infisical SDK
+	// Infisical Java SDK (Latest stable version)
 	implementation 'com.infisical:sdk:3.0.4'
+
+	// dotenv for .env file loading
+	implementation 'io.github.cdimascio:dotenv-java:3.0.2'
 
 }
 
