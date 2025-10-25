@@ -28,8 +28,24 @@ public class ChatRoomCreateRequest {
     @Positive
     private Long buyerId;
 
+    @Schema(name = "product_id", description = "상품 식별자", example = "1")
+    @NotNull
+    @Positive
+    private Long productId;
+
+
+    public static ChatRoomCreateRequest of(Long sellerId, Long buyerId, Long productId) {
+        return ChatRoomCreateRequest.builder()
+                .sellerId(sellerId)
+                .buyerId(buyerId)
+                .productId(productId)
+                .build();
+    }
 
     public static ChatRoomCreateRequest of(Long sellerId, Long buyerId) {
-        return new ChatRoomCreateRequest(sellerId, buyerId);
+        return ChatRoomCreateRequest.builder()
+                .sellerId(sellerId)
+                .buyerId(buyerId)
+                .build();
     }
 }
