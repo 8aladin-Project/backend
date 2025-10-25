@@ -29,7 +29,6 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
 
-    // TODO: 예외코드, 예외처리 도입후 Swagger에 Response body 추가 
     /**
      * 메시지 전송 메서드
      * 채팅방과 발신자를 확인한 뒤 메시지를 생성 및 저장
@@ -90,6 +89,10 @@ public class ChatMessageService {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException(memberId));
+
+        if (!chatRoom.isParticipant(member)) {
+            throw new ChatParticipantNotFoundException(member.getId(), roomId);
+        }
 
         // 해당 사용자가 보낸 메시지를 제외하고 읽지 않은 메시지들을 읽음 처리
         List<ChatMessage> unreadMessages = chatMessageRepository.findByChatRoomAndIsReadAndSenderNot(chatRoom, false, member);
