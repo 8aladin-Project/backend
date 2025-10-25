@@ -101,12 +101,11 @@ jwt:
   private-key: ${JWT_PRIVATE_KEY}
 
 # Infisical Configuration
-# 환경에 따라 자동으로 CLI/SDK 방식 선택:
-# - prod/staging: CLI 사용 (ProcessBuilder 기반, 직접 제어)
-# - dev/test/local: SDK 사용 (안정성, 개발 편의성)
-# INFISICAL_USE_CLI_AUTH=true/false로 명시적 설정 가능
+# dev 환경: CLI 방식 (인증 없이 하드코딩된 PROJECT_ID 사용)
+# prod 환경: SDK 방식 (.env 파일에서 credentials 로드)
+# 명시적 설정: INFISICAL_USE_CLI_AUTH=true/false로 명시적 설정 가능
 infisical:
-  enabled: ${INFISICAL_ENABLED:false}  # DotenvInitializer를 사용하므로 비활성화
+  enabled: true  # 기본적으로 활성화 (비활성화하려면 INFISICAL_ENABLED=false 설정)
   project-id: ${INFISICAL_PROJECT_ID:5936eede-5b19-4d5f-84aa-e48380617257}
   environment: ${INFISICAL_ENVIRONMENT:dev}
   secrets-path: ${INFISICAL_SECRETS_PATH:/}

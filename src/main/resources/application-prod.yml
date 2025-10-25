@@ -65,6 +65,10 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
 
 # Infisical 설정 (Production 환경)
-# prod 환경에서는 자동으로 CLI 방식 사용 (ProcessBuilder 기반)
+# prod 환경에서는 자동으로 SDK 방식 사용
+# 프로젝트 ID는 여기에 하드코딩, credentials는 시스템 환경 변수에서만
 infisical:
+  enabled: true  # Infisical 사용 활성화
   environment: prod
+  project-id: 5936eede-5b19-4d5f-84aa-e48380617257  # 프로젝트 ID 하드코딩
+  secrets-path: /

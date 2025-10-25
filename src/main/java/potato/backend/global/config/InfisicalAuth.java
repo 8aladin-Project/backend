@@ -40,15 +40,40 @@ public class InfisicalAuth {
      */
     public static String loginAndGetToken(String clientId, String clientSecret) 
             throws IOException, InterruptedException {
+        return loginAndGetToken(clientId, clientSecret, null);
+    }
+
+    /**
+     * Infisical CLI를 사용하여 로그인하고 인증 토큰을 획득합니다. (custom domain 지원)
+     *
+     * @param clientId Universal Auth의 Client ID
+     * @param clientSecret Universal Auth의 Client Secret
+     * @param domain Custom Infisical domain (null이면 기본 도메인 사용)
+     * @return 인증 토큰
+     * @throws IOException 프로세스 실행 중 I/O 오류 발생 시
+     * @throws InterruptedException 프로세스 대기 중 인터럽트 발생 시
+     * @throws RuntimeException 로그인 실패 시
+     */
+    public static String loginAndGetToken(String clientId, String clientSecret, String domain) 
+            throws IOException, InterruptedException {
         log.info("Attempting to login to Infisical using Universal Auth...");
         
-        ProcessBuilder pb = new ProcessBuilder(
-            "infisical", "login",
-            "--method=universal-auth",
-            "--client-id=" + clientId,
-            "--client-secret=" + clientSecret,
-            "--plain", "--silent"
-        );
+        List<String> commandList = new ArrayList<>();
+        commandList.add("infisical");
+        commandList.add("login");
+        commandList.add("--method=universal-auth");
+        commandList.add("--client-id=" + clientId);
+        commandList.add("--client-secret=" + clientSecret);
+        
+        if (domain != null && !domain.isEmpty()) {
+            commandList.add("--domain=" + domain);
+            log.info("Using custom domain: {}", domain);
+        }
+        
+        commandList.add("--plain");
+        commandList.add("--silent");
+        
+        ProcessBuilder pb = new ProcessBuilder(commandList);
         pb.redirectErrorStream(true);
         Process p = pb.start();
 
@@ -110,12 +135,32 @@ public class InfisicalAuth {
      */
     public static String runWithTokenAndCapture(String token, String[] command) 
             throws IOException, InterruptedException {
+        return runWithTokenAndCapture(token, command, null);
+    }
+
+    /**
+     * 인증 토큰을 사용하여 Infisical CLI 명령을 실행하고 출력을 반환합니다. (custom domain 지원)
+     *
+     * @param token 인증 토큰
+     * @param command 실행할 명령 배열
+     * @param domain Custom Infisical domain (null이면 기본 도메인 사용)
+     * @return 명령 실행 결과 출력
+     * @throws IOException 프로세스 실행 중 I/O 오류 발생 시
+     * @throws InterruptedException 프로세스 대기 중 인터럽트 발생 시
+     * @throws RuntimeException 명령 실행 실패 시
+     */
+    public static String runWithTokenAndCapture(String token, String[] command, String domain) 
+            throws IOException, InterruptedException {
         log.debug("Executing Infisical command with output capture: {}", Arrays.toString(command));
         
         List<String> cmd = new ArrayList<>();
         cmd.add("infisical");
         cmd.addAll(Arrays.asList(command));
         cmd.add("--token=" + token);
+        
+        if (domain != null && !domain.isEmpty()) {
+            cmd.add("--domain=" + domain);
+        }
         
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
