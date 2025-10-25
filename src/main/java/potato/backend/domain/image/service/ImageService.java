@@ -69,7 +69,7 @@ public class ImageService {
                 })
                 .toList();
         
-        log.info("이미지 업로드 완료 - productId: {}, 저장된 이미지 개수: {}", images.size());
+        log.info("이미지 업로드 완료 - 저장된 이미지 개수: {}", images.size());
         return ImageResponse.fromList(images);
     }
     
