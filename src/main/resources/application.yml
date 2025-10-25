@@ -24,6 +24,12 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         use_sql_comments: true
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
 # Logging Configuration
 logging:
   level:
@@ -33,17 +39,11 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.orm.jdbc.bind: TRACE
 
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 10MB
-      max-request-size: 50MB
-
 # AWS S3 Configuration
 cloud:
   aws:
     s3:
-      enabled: ${AWS_S3_ENABLED:false}  # S3 비활성화 (필요시 true로 설정)
+      enabled: ${AWS_S3_ENABLED:true}  # S3 비활성화 (필요시 true로 설정)
       bucket: ${AWS_S3_BUCKET:your-bucket-name}
       endpoint: ${AWS_S3_ENDPOINT:#{null}}  # MinIO 등 사용 시 설정
       path-style: ${AWS_S3_PATH_STYLE:false}  # MinIO 사용 시 true
@@ -102,7 +102,7 @@ jwt:
 
 # Infisical Configuration
 infisical:
-  enabled: ${INFISICAL_ENABLED:true}  # Infisical 비활성화 (필요시 true로 설정)
+  enabled: ${INFISICAL_ENABLED:false}  # DotenvInitializer를 사용하므로 비활성화
   project-id: ${INFISICAL_PROJECT_ID:5936eede-5b19-4d5f-84aa-e48380617257}
   environment: ${INFISICAL_ENVIRONMENT:dev}
   secrets-path: ${INFISICAL_SECRETS_PATH:/}
