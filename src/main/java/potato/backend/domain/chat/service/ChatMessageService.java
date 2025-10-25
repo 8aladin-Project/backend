@@ -129,6 +129,9 @@ public class ChatMessageService {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException(memberId));
+        if (!chatRoom.isParticipant(member)) {
+            throw new ChatParticipantNotFoundException(member.getId(), roomId);
+        }
 
         return chatMessageRepository.countByChatRoomAndIsReadAndSenderNot(chatRoom, false, member);
     }
