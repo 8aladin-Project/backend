@@ -55,12 +55,12 @@ public class ImageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-        @GetMapping("/debug/s3")
-        @Operation(summary = "S3 연결 확인 (디버그)", description = "S3 연결 및 권한을 간단히 체크합니다.")
-        public ResponseEntity<String> checkS3() {
-                String result = imageService.checkS3Connection();
-                return ResponseEntity.ok(result);
-        }
+    @GetMapping("/debug/s3")
+    @Operation(summary = "S3 연결 확인 (디버그)", description = "S3 연결 및 권한을 간단히 체크합니다.")
+    public ResponseEntity<String> checkS3() {
+        String result = imageService.checkS3Connection();
+        return ResponseEntity.ok(result);
+    }
     
     @GetMapping("/product/{productId}")
     @Operation(summary = "상품 이미지 조회", description = "특정 상품의 모든 이미지를 조회합니다.")
