@@ -59,4 +59,16 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
      */
     @Query("SELECT COUNT(cm) FROM ChatMessage cm WHERE cm.sender = :sender AND cm.isRead = :isRead")
     long countBySenderAndIsRead(@Param("sender") Member sender, @Param("isRead") boolean isRead);
+
+    /**
+     * 특정 사용자가 참여한 채팅방에서 읽지 않은 메시지 개수 조회 (사용자가 보낸 메시지 제외)
+     * @param member 사용자
+     * @return 읽지 않은 메시지 개수
+     */
+    @Query("SELECT COUNT(cm) FROM ChatMessage cm " +
+           "WHERE (cm.chatRoom.seller = :member OR cm.chatRoom.buyer = :member) " +
+           "AND cm.isRead = false " +
+           "AND cm.sender != :member")
+    long countUnreadMessagesForMember(@Param("member") Member member);
+
 }
