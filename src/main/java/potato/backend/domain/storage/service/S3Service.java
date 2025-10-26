@@ -67,16 +67,20 @@ public class S3Service {
         log.debug("Preparing to upload file to S3 - bucket: {}, key: {}, size: {}, contentType: {}", 
             bucketName, key, file.getSize(), file.getContentType());
 
+            // MultipartFile의 bytes를 읽어서 RequestBody를 생성
+            // 이렇게 하면 InputStream의 mark/reset 문제를 피할 수 있음
+            byte[] fileBytes = file.getBytes();
+            
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
                     .contentType(file.getContentType())
-                    .contentLength(file.getSize())
+                    .contentLength((long) fileBytes.length)
                     .build();
             
             s3Client.putObject(
                     putObjectRequest, 
-                    RequestBody.fromInputStream(file.getInputStream(), file.getSize())
+                    RequestBody.fromBytes(fileBytes)
             );
             
             String fileUrl = generateFileUrl(key);
@@ -89,7 +93,8 @@ public class S3Service {
                 if (e.awsErrorDetails() != null) {
                     errorMsg = e.awsErrorDetails().errorMessage();
                 }
-            } catch (Exception ignore) {
+            } catch (RuntimeException ignore) {
+                // awsErrorDetails() 호출 시 예외 발생 시 무시
             }
             if (errorMsg == null) {
                 errorMsg = e.getMessage() != null ? e.getMessage() : e.toString();
@@ -103,9 +108,6 @@ public class S3Service {
         } catch (IOException e) {
             log.error("Failed to read file: {}", originalFilename, e);
             throw new ImageUploadException("파일 읽기 실패: " + originalFilename, e);
-        } catch (Exception e) {
-            log.error("Unexpected error during file upload: {}", originalFilename, e);
-            throw new ImageUploadException("파일 업로드 중 예상치 못한 오류: " + e.getMessage(), e);
         }
     }
 
@@ -124,7 +126,7 @@ public class S3Service {
             String msg = e.awsErrorDetails() != null ? e.awsErrorDetails().errorMessage() : e.getMessage();
             log.error("listBuckets failed: {}", msg, e);
             return "listBuckets failed: " + (msg != null ? msg : e.toString());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.error("Unexpected error listing buckets", e);
             return "Unexpected error: " + e.toString();
         }

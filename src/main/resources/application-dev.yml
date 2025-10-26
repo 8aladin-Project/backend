@@ -49,8 +49,25 @@ infisical:
   project-id: ${INFISICAL_PROJECT_ID:5936eede-5b19-4d5f-84aa-e48380617257}
   secrets-path: ${INFISICAL_SECRETS_PATH:/}
 
-# AWS S3 설정 (환경변수로 제어 가능)
+# AWS S3 설정 (Infisical에서 자격 증명 로드)
+# 개발 환경에서는 로컬 S3(MinIO 등)를 사용합니다.
+# Infisical의 dev 환경에 다음 변수들을 설정해야 합니다:
+# - AWS_S3_ENABLED: true
+# - AWS_S3_BUCKET: 버킷 이름
+# - AWS_S3_ENDPOINT: MinIO 엔드포인트 (예: http://localhost:9000)
+# - AWS_S3_PATH_STYLE: true (MinIO 사용 시)
+# - AWS_ACCESS_KEY: 액세스 키
+# - AWS_SECRET_KEY: 시크릿 키
+# - AWS_REGION: ap-northeast-2
 cloud:
   aws:
     s3:
-      enabled: ${CLOUD_AWS_S3_ENABLED:true}
+      enabled: ${AWS_S3_ENABLED:true}
+      bucket: ${AWS_S3_BUCKET:}
+      endpoint: ${AWS_S3_ENDPOINT:#{null}}
+      path-style: ${AWS_S3_PATH_STYLE:false}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:}
+      secret-key: ${AWS_SECRET_KEY:}
+    region:
+      static: ${AWS_REGION:ap-northeast-2}
