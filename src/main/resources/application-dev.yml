@@ -44,13 +44,13 @@ spring:
 # dev 환경에서는 자동으로 CLI 방식 사용
 # 프로젝트 ID는 하드코딩
 infisical:
-  enabled: true  # Infisical 사용 활성화
-  environment: dev
-  project-id: 5936eede-5b19-4d5f-84aa-e48380617257  # 프로젝트 ID 하드코딩
-  secrets-path: /
+  enabled: ${INFISICAL_ENABLED:true}
+  environment: ${INFISICAL_ENVIRONMENT:dev}
+  project-id: ${INFISICAL_PROJECT_ID:5936eede-5b19-4d5f-84aa-e48380617257}
+  secrets-path: ${INFISICAL_SECRETS_PATH:/}
 
-# AWS S3 설정 (Dev 환경에서는 비활성화)
+# AWS S3 설정 (환경변수로 제어 가능)
 cloud:
   aws:
     s3:
-      enabled: false  # Dev 환경에서는 S3 비활성화
+      enabled: ${CLOUD_AWS_S3_ENABLED:true}
