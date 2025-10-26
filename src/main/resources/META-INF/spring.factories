@@ -1,2 +1,1 @@
-org.springframework.context.ApplicationContextInitializer=\
-  potato.backend.global.config.InfisicalConfigInitializer
+potato.backend.global.config.InfisicalConfigInitializer
