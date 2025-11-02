@@ -50,29 +50,51 @@ public class InfisicalConfigInitializer implements ApplicationContextInitializer
             String projectId = environment.getProperty("infisical.project-id");
             String infisicalEnv = environment.getProperty("infisical.environment", "dev");
             String secretsPath = environment.getProperty("infisical.secrets-path", "/");
+            String apiUrl = environment.getProperty("infisical.api-url");
             
             log.info("Project ID: {}", projectId);
             log.info("Environment: {}", infisicalEnv);
             log.info("Secrets Path: {}", secretsPath);
+            if (apiUrl != null && !apiUrl.isEmpty()) {
+                log.info("API URL: {}", apiUrl);
+            }
 
-            // CLI 확인
-            boolean useCliAuth = Boolean.parseBoolean(getEnvValue("INFISICAL_USE_CLI_AUTH", "true"));
-            boolean cliAvailable = isInfisicalCliAvailable();
+            // prod 환경에서는 SDK만 사용, dev 환경에서는 CLI 우선
+            boolean isProd = "prod".equalsIgnoreCase(infisicalEnv);
+            boolean useCliAuth = !isProd && Boolean.parseBoolean(getEnvValue("INFISICAL_USE_CLI_AUTH", "true"));
+            boolean cliAvailable = !isProd && isInfisicalCliAvailable();
 
-            if (useCliAuth && cliAvailable) {
+            if (isProd) {
+                log.info("Production environment detected - using SDK-based authentication only");
+            }
+
+            boolean loadedSuccessfully = false;
+            
+            // CLI가 사용 가능하면 CLI를 먼저 시도 (dev 환경만)
+            if (cliAvailable && useCliAuth) {
                 log.info("✓ Infisical CLI is available");
                 log.info("Using CLI-based authentication");
-                loadFromCli(projectId, infisicalEnv, secretsPath, environment);
-            } else {
-                if (useCliAuth && !cliAvailable) {
-                    log.info("✗ Infisical CLI is not available");
+                try {
+                    loadFromCli(projectId, infisicalEnv, secretsPath, apiUrl, environment);
+                    loadedSuccessfully = true;
+                } catch (Exception e) {
+                    log.warn("⚠️  CLI authentication failed: {}", e.getMessage());
+                    log.info("Falling back to SDK-based authentication");
                 }
+            } else if (!cliAvailable && useCliAuth) {
+                log.warn("✗ Infisical CLI is not available");
+                log.info("Falling back to SDK-based authentication");
+            }
+            
+            // CLI 실패 또는 사용하지 않는 경우 SDK 사용
+            if (!loadedSuccessfully) {
                 log.info("Using SDK-based authentication");
-                loadFromUniversalAuth(projectId, infisicalEnv, secretsPath, environment);
+                loadFromUniversalAuth(projectId, infisicalEnv, secretsPath, apiUrl, environment);
             }
         } catch (Exception e) {
             log.error("Failed to load secrets from Infisical: {}", e.getMessage());
-            throw new RuntimeException("Failed to initialize Infisical", e);
+            log.warn("⚠️  Continuing without Infisical secrets - using local configuration");
+            // 개발 환경에서는 Infisical 없이도 실행 가능하도록 예외를 throw하지 않음
         }
     }
 
@@ -86,13 +108,36 @@ public class InfisicalConfigInitializer implements ApplicationContextInitializer
         }
     }
 
-    private void loadFromCli(String projectId, String infisicalEnv, String secretsPath, ConfigurableEnvironment springEnvironment) {
+    private void loadFromCli(String projectId, String infisicalEnv, String secretsPath, String apiUrl, ConfigurableEnvironment springEnvironment) {
         try {
             log.info("Using CLI-based authentication with export command...");
             
-            String clientId = getEnvValue("INFISICAL_CLIENT_ID");
-            String clientSecret = getEnvValue("INFISICAL_CLIENT_SECRET");
-            String apiUrl = getEnvValue("INFISICAL_API_URL");
+            // INFISICAL_UNIVERSAL_AUTH_* 먼저 확인, 없으면 INFISICAL_* 확인 (호환성)
+            String clientId = getEnvValue("INFISICAL_UNIVERSAL_AUTH_CLIENT_ID");
+            if (clientId == null || clientId.isEmpty()) {
+                clientId = getEnvValue("INFISICAL_CLIENT_ID");
+            }
+            
+            String clientSecret = getEnvValue("INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET");
+            if (clientSecret == null || clientSecret.isEmpty()) {
+                clientSecret = getEnvValue("INFISICAL_CLIENT_SECRET");
+            }
+            
+            // 환경 변수에서 API URL을 가져오되, 파라미터로 받은 값이 우선
+            if (apiUrl == null || apiUrl.isEmpty()) {
+                apiUrl = getEnvValue("INFISICAL_API_URL");
+            }
+            
+            // 자격 증명이 있으면 로그 출력
+            boolean hasCredentials = clientId != null && !clientId.isEmpty() && 
+                                    clientSecret != null && !clientSecret.isEmpty();
+            
+            if (hasCredentials) {
+                log.info("Client ID: {}***", clientId.substring(0, Math.min(8, clientId.length())));
+                log.info("Using Universal Auth credentials from environment");
+            } else {
+                log.info("No explicit credentials provided - using CLI session (infisical login)");
+            }
             
             // infisical export를 사용하여 secrets 가져오기
             List<String> commandList = new ArrayList<>();
@@ -105,13 +150,20 @@ public class InfisicalConfigInitializer implements ApplicationContextInitializer
             
             if (apiUrl != null && !apiUrl.isEmpty()) {
                 commandList.add("--domain=" + apiUrl);
-                log.info("Using custom Infisical API URL: {}", apiUrl);
+                log.info("✓ Using custom Infisical API URL: {}", apiUrl);
+            } else {
+                log.info("Using default Infisical cloud (https://app.infisical.com)");
             }
             
-            // Universal Auth credentials 설정
+            log.info("Executing command: infisical export --format=dotenv --projectId=*** --env={} --path={} {}",
+                    infisicalEnv, secretsPath, apiUrl != null ? "--domain=" + apiUrl : "");
+            
+            // Universal Auth credentials 설정 (있는 경우에만)
             ProcessBuilder pb = new ProcessBuilder(commandList);
-            pb.environment().put("INFISICAL_UNIVERSAL_AUTH_CLIENT_ID", clientId);
-            pb.environment().put("INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET", clientSecret);
+            if (hasCredentials) {
+                pb.environment().put("INFISICAL_UNIVERSAL_AUTH_CLIENT_ID", clientId);
+                pb.environment().put("INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET", clientSecret);
+            }
             pb.redirectErrorStream(true);
             
             Process process = pb.start();
@@ -168,7 +220,7 @@ public class InfisicalConfigInitializer implements ApplicationContextInitializer
         }
     }
 
-    private void loadFromUniversalAuth(String projectId, String infisicalEnv, String secretsPath, ConfigurableEnvironment springEnvironment) throws InfisicalException {
+    private void loadFromUniversalAuth(String projectId, String infisicalEnv, String secretsPath, String apiUrl, ConfigurableEnvironment springEnvironment) throws InfisicalException {
         // INFISICAL_UNIVERSAL_AUTH_* 먼저 확인, 없으면 INFISICAL_* 확인 (호환성)
         String clientId = getEnvValue("INFISICAL_UNIVERSAL_AUTH_CLIENT_ID");
         if (clientId == null || clientId.isEmpty()) {
@@ -180,7 +232,10 @@ public class InfisicalConfigInitializer implements ApplicationContextInitializer
             clientSecret = getEnvValue("INFISICAL_CLIENT_SECRET");
         }
         
-        String apiUrl = getEnvValue("INFISICAL_API_URL");
+        // 환경 변수에서 API URL을 가져오되, 파라미터로 받은 값이 우선
+        if (apiUrl == null || apiUrl.isEmpty()) {
+            apiUrl = getEnvValue("INFISICAL_API_URL");
+        }
 
         if (clientId == null || clientId.isEmpty() || clientSecret == null || clientSecret.isEmpty()) {
             log.error("❌ Infisical credentials not found!");

@@ -65,9 +65,27 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
 
 # Infisical 설정 (Production 환경)
-# 모든 설정을 시스템 환경변수에서 가져옴
+# Production에서는 SDK 방식으로 Universal Auth 사용
+# 환경 변수로 자격 증명을 제공해야 함:
+# - INFISICAL_CLIENT_ID (또는 INFISICAL_UNIVERSAL_AUTH_CLIENT_ID)
+# - INFISICAL_CLIENT_SECRET (또는 INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET)
 infisical:
   enabled: ${INFISICAL_ENABLED:true}
   environment: ${INFISICAL_ENVIRONMENT:prod}
   project-id: ${INFISICAL_PROJECT_ID:5936eede-5b19-4d5f-84aa-e48380617257}
   secrets-path: ${INFISICAL_SECRETS_PATH:/}
+  api-url: ${INFISICAL_API_URL:https://infisical.8aladin.shop}
+
+# AWS S3 설정 (Production - Infisical에서 로드)
+cloud:
+  aws:
+    s3:
+      enabled: ${AWS_S3_ENABLED:true}
+      bucket: ${AWS_S3_BUCKET:}
+      endpoint: ${AWS_S3_ENDPOINT:#{null}}
+      path-style: ${AWS_S3_PATH_STYLE:false}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:}
+      secret-key: ${AWS_SECRET_KEY:}
+    region:
+      static: ${AWS_REGION:ap-northeast-2}
