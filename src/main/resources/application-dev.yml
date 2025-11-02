@@ -42,12 +42,13 @@ spring:
 
 # Infisical 설정 (Dev 환경)
 # dev 환경에서는 자동으로 CLI 방식 사용
-# 프로젝트 ID는 하드코딩
+# 프로젝트 ID와 커스텀 호스트는 하드코딩
 infisical:
   enabled: ${INFISICAL_ENABLED:true}
   environment: ${INFISICAL_ENVIRONMENT:dev}
   project-id: ${INFISICAL_PROJECT_ID:5936eede-5b19-4d5f-84aa-e48380617257}
   secrets-path: ${INFISICAL_SECRETS_PATH:/}
+  api-url: ${INFISICAL_API_URL:https://infisical.8aladin.shop}
 
 # AWS S3 설정 (Infisical에서 자격 증명 로드)
 # 개발 환경에서는 로컬 S3(MinIO 등)를 사용합니다.

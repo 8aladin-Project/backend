@@ -37,7 +37,7 @@ import java.util.Map;
  */
 @Slf4j
 @Configuration
-@ConditionalOnProperty(name = "infisical.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "infisical.sdk.enabled", havingValue = "true", matchIfMissing = false)
 public class InfisicalConfig {
 
     @Value("${infisical.project-id}")
