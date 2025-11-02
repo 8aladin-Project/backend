@@ -58,8 +58,32 @@ public class ImageController {
     @GetMapping("/debug/s3")
     @Operation(summary = "S3 연결 확인 (디버그)", description = "S3 연결 및 권한을 간단히 체크합니다.")
     public ResponseEntity<String> checkS3() {
+        log.info("S3 연결 확인 요청");
         String result = imageService.checkS3Connection();
+        log.info("S3 연결 확인 결과: {}", result);
         return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/debug/config")
+    @Operation(summary = "S3 설정 확인 (디버그)", description = "현재 S3 설정 정보를 확인합니다.")
+    public ResponseEntity<String> checkConfig(
+            @org.springframework.beans.factory.annotation.Value("${cloud.aws.s3.enabled:false}") boolean s3Enabled,
+            @org.springframework.beans.factory.annotation.Value("${cloud.aws.s3.bucket:not-set}") String bucket,
+            @org.springframework.beans.factory.annotation.Value("${cloud.aws.s3.endpoint:not-set}") String endpoint,
+            @org.springframework.beans.factory.annotation.Value("${cloud.aws.s3.path-style:false}") boolean pathStyle,
+            @org.springframework.beans.factory.annotation.Value("${cloud.aws.region.static:not-set}") String region
+    ) {
+        String config = String.format(
+                "S3 Configuration:\n" +
+                "- Enabled: %s\n" +
+                "- Bucket: %s\n" +
+                "- Endpoint: %s\n" +
+                "- Path Style: %s\n" +
+                "- Region: %s",
+                s3Enabled, bucket, endpoint, pathStyle, region
+        );
+        log.info("S3 설정 확인 요청:\n{}", config);
+        return ResponseEntity.ok(config);
     }
     
     @GetMapping("/product/{productId}")

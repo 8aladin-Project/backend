@@ -63,3 +63,11 @@ logging:
     com.zaxxer.hikari: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Infisical 설정 (Production 환경)
+# 모든 설정을 시스템 환경변수에서 가져옴
+infisical:
+  enabled: ${INFISICAL_ENABLED:true}
+  environment: ${INFISICAL_ENVIRONMENT:prod}
+  project-id: ${INFISICAL_PROJECT_ID:5936eede-5b19-4d5f-84aa-e48380617257}
+  secrets-path: ${INFISICAL_SECRETS_PATH:/}

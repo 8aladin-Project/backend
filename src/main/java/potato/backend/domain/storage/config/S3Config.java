@@ -39,22 +39,35 @@ public class S3Config {
 
     @Bean
     public S3Client s3Client() {
-        log.info("Initializing S3Client with region: {}, pathStyle: {}, endpoint: {}", 
-                region, pathStyle, endpoint != null ? endpoint : "AWS Default");
+        log.info("=== S3Client 초기화 시작 ===");
+        log.info("Region: {}", region);
+        log.info("Path Style: {}", pathStyle);
+        log.info("Endpoint: {}", endpoint != null ? endpoint : "AWS Default (S3)");
+        log.info("Bucket: {}", bucketName);
+        log.info("Access Key: {}***", accessKey != null && accessKey.length() > 4 
+                ? accessKey.substring(0, 4) : "null");
         
         if (accessKey == null || accessKey.isEmpty() || accessKey.equals("your-access-key")) {
-            log.error("AWS Access Key is not configured properly");
-            throw new IllegalStateException("AWS_ACCESS_KEY 환경 변수가 설정되지 않았습니다.");
+            log.error("AWS Access Key is not configured properly: '{}'", accessKey);
+            throw new IllegalStateException("AWS_ACCESS_KEY 환경 변수가 Infisical에서 로드되지 않았습니다. Infisical dev 환경에 AWS_ACCESS_KEY를 설정해주세요.");
         }
         
         if (secretKey == null || secretKey.isEmpty() || secretKey.equals("your-secret-key")) {
             log.error("AWS Secret Key is not configured properly");
-            throw new IllegalStateException("AWS_SECRET_KEY 환경 변수가 설정되지 않았습니다.");
+            throw new IllegalStateException("AWS_SECRET_KEY 환경 변수가 Infisical에서 로드되지 않았습니다. Infisical dev 환경에 AWS_SECRET_KEY를 설정해주세요.");
         }
         
         if (bucketName == null || bucketName.isEmpty() || bucketName.equals("your-bucket-name")) {
-            log.error("S3 Bucket name is not configured properly");
-            throw new IllegalStateException("AWS_S3_BUCKET 환경 변수가 설정되지 않았습니다.");
+            log.error("S3 Bucket name is not configured properly: '{}'", bucketName);
+            throw new IllegalStateException("AWS_S3_BUCKET 환경 변수가 Infisical에서 로드되지 않았습니다. Infisical dev 환경에 AWS_S3_BUCKET을 설정해주세요.");
+        }
+        
+        // endpoint가 null이거나 비어있으면 AWS S3를 사용
+        // endpoint가 설정되어 있으면 MinIO 등 로컬 S3를 사용
+        if (endpoint != null && !endpoint.isEmpty()) {
+            log.warn("⚠️  Custom endpoint 사용 중: {}", endpoint);
+            log.warn("⚠️  로컬 S3(MinIO 등)를 사용하는 경우 해당 서비스가 실행 중인지 확인하세요!");
+            log.warn("⚠️  502 에러가 발생하면 endpoint 주소를 확인하세요: {}", endpoint);
         }
         
         var builder = S3Client.builder()
@@ -68,11 +81,18 @@ public class S3Config {
         
         // endpoint가 설정되어 있으면 (로컬 MinIO 등) override
         if (endpoint != null && !endpoint.isEmpty()) {
-            builder.endpointOverride(URI.create(endpoint));
-            log.info("Using custom S3 endpoint: {}", endpoint);
+            try {
+                URI endpointUri = URI.create(endpoint);
+                builder.endpointOverride(endpointUri);
+                log.info("✓ Custom S3 endpoint 설정 완료: {}", endpoint);
+            } catch (Exception e) {
+                log.error("❌ Invalid endpoint URI: {}", endpoint, e);
+                throw new IllegalStateException("잘못된 S3 endpoint 형식: " + endpoint, e);
+            }
         }
         
-        log.info("S3Client initialized successfully for bucket: {}", bucketName);
+        log.info("✓ S3Client 초기화 완료 - bucket: {}", bucketName);
+        log.info("=== S3Client 초기화 종료 ===");
         return builder.build();
     }
 
