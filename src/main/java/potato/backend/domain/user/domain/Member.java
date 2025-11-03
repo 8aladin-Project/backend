@@ -51,6 +51,12 @@ public class Member extends BaseEntity{
     @Builder.Default
     private BigDecimal ratingScore = BigDecimal.ZERO;
 
+    @Column(name = "fcm_token", length = 512)
+    private String fcmToken; // FCM 디바이스 토큰
+
+    @Builder.Default
+    @Column(name = "push_notification_enabled")
+    private Boolean pushNotificationEnabled = true; // 푸시 알림 활성화 여부
 
     public static Member create(String name, String email, String hashedPassword, String mobileNumber){
         return Member.builder()
@@ -88,5 +94,19 @@ public class Member extends BaseEntity{
 
     public void updateMobileNumber(String mobileNumber) {
         this.mobileNumber = mobileNumber;
+    }
+
+    // FCM 토큰 업데이트 메서드
+    public void updateFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
+
+    // 푸시 알림 활성화/비활성화 메서드
+    public void enablePushNotification() {
+        this.pushNotificationEnabled = true;
+    }
+
+    public void disablePushNotification() {
+        this.pushNotificationEnabled = false;
     }
 }
