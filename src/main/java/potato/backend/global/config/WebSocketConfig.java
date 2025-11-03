@@ -1,6 +1,8 @@
 package potato.backend.global.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -8,7 +10,11 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker // STOMP 기반 웹소켓 메시징을 활성화하는 스프링 설정
+@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    private final WebSocketHandshakeInterceptor handshakeInterceptor;
+    private final WebSocketChannelInterceptor channelInterceptor;
 
     private static final String CHAT_ENDPOINT = "/ws-chat"; // 웹소켓으로 채팅방을 연결하는 엔드포인트
     private static final String APPLICATION_DESTINATION_PREFIX = "/app"; // 클라이언트가 서버로 메시지를 보내는 프리픽스
@@ -21,6 +27,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint(CHAT_ENDPOINT) // /ws-chat 으로 URL을 열어두면 클라이언트가 연결 가능
                 .setAllowedOriginPatterns("*") // 어떤 도메인에서든 연결 허용
+                .addInterceptors(handshakeInterceptor) // JWT 인증 인터셉터 추가
                 .withSockJS(); // 브라우저가 웹소켓을 지원하지 않을때 AJAX의 SockJS 폴백 방식으로 통신
     }
 
@@ -29,5 +36,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableSimpleBroker(SIMPLE_BROKER_PREFIX); // 내장된 브로커를 켜서 서버가 /topic/** 으로 보내는 메시지를 브로드캐스트
         registry.setApplicationDestinationPrefixes(APPLICATION_DESTINATION_PREFIX); // 클라이언트가 서버로 메시지를 보낼때 /app을 프리픽스로 붙이도록 강제
+    }
+
+    // 클라이언트에서 서버로 메시지를 보낼 때 인터셉터 설정
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(channelInterceptor); // JWT 인증 인터셉터 추가
     }
 }

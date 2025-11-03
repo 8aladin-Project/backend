@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import potato.backend.domain.chat.domain.ChatMessage;
 import potato.backend.domain.chat.domain.ChatRoom;
 import potato.backend.domain.chat.dto.chatMessage.ChatMessageResponse;
@@ -14,12 +15,13 @@ import potato.backend.domain.chat.exception.ChatRoomNotFoundException;
 import potato.backend.domain.chat.exception.MemberNotFoundException;
 import potato.backend.domain.chat.repository.ChatMessageRepository;
 import potato.backend.domain.chat.repository.ChatRoomRepository;
+import potato.backend.domain.notification.service.FcmService;
 import potato.backend.domain.user.domain.Member;
 import potato.backend.domain.user.repository.MemberRepository;
 
-
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -28,6 +30,8 @@ public class ChatMessageService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
+    private final ChatSessionManager chatSessionManager;
+    private final FcmService fcmService;
 
     /**
      * 메시지 전송 메서드
@@ -53,7 +57,37 @@ public class ChatMessageService {
         chatRoom.addMessage(message);
 
         ChatMessage savedMessage = chatMessageRepository.save(message);
+        
+        // 오프라인 사용자에게 FCM 알림 전송
+        sendFcmNotificationIfOffline(chatRoom, sender, request.getContent());
+        
         return ChatMessageResponse.from(savedMessage);
+    }
+
+    /**
+     * 메시지 수신자가 오프라인인 경우 FCM 알림 전송
+     * @param chatRoom 채팅방
+     * @param sender 발신자
+     * @param messageContent 메시지 내용
+     */
+    private void sendFcmNotificationIfOffline(ChatRoom chatRoom, Member sender, String messageContent) {
+        // 수신자 (발신자가 seller면 buyer, buyer면 seller)
+        Member recipient = chatRoom.getSeller().getId().equals(sender.getId()) 
+                ? chatRoom.getBuyer() 
+                : chatRoom.getSeller();
+        
+        // 수신자가 채팅방에 연결되어 있는지 확인 (WebSocket으로 온라인인지)
+        boolean isRecipientOnline = chatSessionManager.isUserConnected(chatRoom.getId(), recipient.getId());
+        
+        if (!isRecipientOnline) {
+            // 수신자가 오프라인이면 FCM 알림 전송
+            log.info("오프라인 사용자에게 FCM 알림 전송 시도: recipientId={}, roomId={}", 
+                    recipient.getId(), chatRoom.getId());
+            fcmService.sendChatNotification(recipient, sender.getName(), messageContent, chatRoom.getId());
+        } else {
+            log.debug("온라인 사용자이므로 FCM 알림 생략: recipientId={}, roomId={}", 
+                    recipient.getId(), chatRoom.getId());
+        }
     }
 
     /**
