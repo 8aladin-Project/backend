@@ -1,0 +1,64 @@
+package potato.backend.global.config;
+
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import jakarta.annotation.PostConstruct;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+@Slf4j
+@Configuration
+public class FcmConfig {
+
+    @Value("${FIREBASE_SERVICE_ACCOUNT_JSON:}")
+    private String serviceAccountJson;
+
+    @PostConstruct
+    public void initialize() {
+        try {
+            if (FirebaseApp.getApps().isEmpty()) {
+                if (serviceAccountJson == null || serviceAccountJson.isEmpty()) {
+                    log.warn("Firebase 서비스 계정 정보가 없습니다. FCM 기능이 비활성화됩니다.");
+                    return;
+                }
+
+                ByteArrayInputStream stream = new ByteArrayInputStream(
+                    serviceAccountJson.getBytes(StandardCharsets.UTF_8)
+                );
+                
+                FirebaseOptions options = FirebaseOptions.builder()
+                        .setCredentials(GoogleCredentials.fromStream(stream))
+                        .build();
+
+                FirebaseApp.initializeApp(options);
+                log.info("Firebase 초기화 완료 (project: aladin-f19fc)");
+            } else {
+                log.info("Firebase가 이미 초기화되어 있습니다.");
+            }
+        } catch (IOException e) {
+            log.error("Firebase 초기화 실패", e);
+            throw new RuntimeException("Firebase 초기화 실패", e);
+        }
+    }
+
+    @Bean
+    public FirebaseMessaging firebaseMessaging() {
+        if (FirebaseApp.getApps().isEmpty()) {
+            log.warn("Firebase가 초기화되지 않았습니다. FirebaseMessaging Bean을 생성할 수 없습니다.");
+            throw new IllegalStateException("Firebase가 초기화되지 않았습니다. FIREBASE_SERVICE_ACCOUNT_JSON 환경 변수를 확인하세요.");
+        }
+        
+        FirebaseMessaging messaging = FirebaseMessaging.getInstance();
+        log.info("FirebaseMessaging Bean 등록 완료");
+        return messaging;
+    }
+}
+
