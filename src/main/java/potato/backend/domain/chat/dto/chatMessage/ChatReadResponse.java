@@ -7,32 +7,39 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatReadResponse {
 
-    private Long messageId;     // 읽음 처리된 메시지 ID (단일 메시지 읽음 처리 시)
-    private Long roomId;        // 채팅방 ID (채팅방 전체 읽음 처리 시)
-    private Long memberId;      // 읽은 사용자 ID
-    private int readCount;      // 읽음 처리된 메시지 개수
-    private boolean success;    // 읽음 처리 성공 여부
+    private boolean success;
+    private Data data;
 
-    public static ChatReadResponse ofMessage(Long messageId, Long memberId, boolean success) {
+    @Getter
+    @Builder(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class Data {
+        private int readCount;  // 읽음 처리된 메시지 개수
+    }
+
+    public static ChatReadResponse success(int readCount) {
+        Data data = Data.builder()
+                .readCount(readCount)
+                .build();
+
         return ChatReadResponse.builder()
-                .messageId(messageId)
-                .memberId(memberId)
-                .readCount(success ? 1 : 0)
-                .success(success)
+                .success(true)
+                .data(data)
                 .build();
     }
 
+    // 기존 메서드들과의 호환성을 위한 메서드들
+    public static ChatReadResponse ofMessage(Long messageId, Long memberId, boolean success) {
+        return ChatReadResponse.success(success ? 1 : 0);
+    }
+
     public static ChatReadResponse ofRoom(Long roomId, Long memberId, int readCount, boolean success) {
-        return ChatReadResponse.builder()
-                .roomId(roomId)
-                .memberId(memberId)
-                .readCount(readCount)
-                .success(success)
-                .build();
+        return ChatReadResponse.success(readCount);
     }
 }
