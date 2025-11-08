@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import potato.backend.domain.chat.dto.chatMessage.ChatMessageListResponse;
 import potato.backend.domain.chat.dto.chatMessage.ChatMessageReadRequest;
 import potato.backend.domain.chat.dto.chatMessage.ChatMessageResponse;
 import potato.backend.domain.chat.dto.chatMessage.ChatReadResponse;
@@ -384,6 +385,102 @@ public class ChatMessageController {
 
         } catch (Exception e) {
             log.error("채팅방 읽지 않은 메시지 개수 조회 실패: roomId={}, authenticatedMemberId={}, error={}", roomId, authenticatedMemberId, e.getMessage());
+            throw e; // GlobalExceptionHandler에서 처리하도록 예외를 다시 throw
+        }
+    }
+
+    /**
+     * 채팅방의 메시지 목록을 조회하는 API
+     * @param roomId 채팅방 ID
+     * @param limit 한 번에 조회할 메시지 개수 (기본값: 50)
+     * @param before 이 ID보다 오래된 메시지만 조회 (커서 기반 페이징)
+     * @return 메시지 목록
+     */
+    @Operation(summary = "채팅방 메시지 목록 조회 API", description = "특정 채팅방의 메시지들을 페이징하여 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                responseCode = "200",
+                description = "조회 성공",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ChatMessageListResponse.class))
+            ),
+            @ApiResponse(
+                responseCode = "400",
+                description = "잘못된 요청",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = {
+                                @ExampleObject(
+                                        name = "INVALID_ARGUMENT",
+                                        value = "{\"errorCodeName\":\"INVALID_ARGUMENT\",\"errorMessage\":\"유효하지 않은 인자입니다\"}"
+                                ),
+                                @ExampleObject(
+                                        name = "INVALID_PAGING_PARAMETER",
+                                        value = "{\"errorCodeName\":\"INVALID_PAGING_PARAMETER\",\"errorMessage\":\"유효하지 않은 페이징 파라미터입니다\"}"
+                                )
+                        }
+                )
+            ),
+            @ApiResponse(
+                responseCode = "403",
+                description = "채팅방 접근 권한 없음",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "CHAT_PARTICIPANT_NOT_FOUND",
+                                value = "{\"errorCodeName\":\"CHAT_PARTICIPANT_NOT_FOUND\",\"errorMessage\":\"채팅방에 참여할 권한이 없습니다\"}"
+                        )
+                )
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "채팅방을 찾을 수 없음",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "CHAT_ROOM_NOT_FOUND",
+                                value = "{\"errorCodeName\":\"CHAT_ROOM_NOT_FOUND\",\"errorMessage\":\"채팅방을 찾을 수 없습니다\"}"
+                        )
+                )
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "서버 내부 오류",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponse.class),
+                        examples = @ExampleObject(
+                                name = "INTERNAL_SERVER_ERROR",
+                                value = "{\"errorCodeName\":\"INTERNAL_SERVER_ERROR\",\"errorMessage\":\"서버 내부 오류입니다\"}"
+                        )
+                )
+            )
+    })
+    @GetMapping("/rooms/{roomId}/messages")
+    public ResponseEntity<ChatMessageListResponse> getMessagesInRoom(
+            @Parameter(description = "채팅방 ID", required = true)
+            @PathVariable Long roomId,
+            @Parameter(description = "조회할 메시지 개수 (기본값: 50, 최대: 100)")
+            @RequestParam(required = false) Integer limit,
+            @Parameter(description = "이 ID보다 오래된 메시지만 조회 (커서 기반 페이징)")
+            @RequestParam(required = false) Long before) {
+
+        Long authenticatedMemberId = memberUtil.getCurrentUser().memberId();
+        log.info("채팅방 메시지 목록 조회 요청: roomId={}, authenticatedMemberId={}, limit={}, before={}",
+                roomId, authenticatedMemberId, limit, before);
+
+        try {
+            ChatMessageListResponse response = chatMessageService.getMessagesInRoom(roomId, authenticatedMemberId, limit, before);
+
+            log.info("채팅방 메시지 목록 조회 완료: roomId={}, messageCount={}",
+                    roomId, response.getData().getMessages().size());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("채팅방 메시지 목록 조회 실패: roomId={}, authenticatedMemberId={}, error={}",
+                    roomId, authenticatedMemberId, e.getMessage());
             throw e; // GlobalExceptionHandler에서 처리하도록 예외를 다시 throw
         }
     }
