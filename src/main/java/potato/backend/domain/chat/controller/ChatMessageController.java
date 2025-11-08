@@ -8,6 +8,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -306,6 +307,7 @@ public class ChatMessageController {
      * @param roomId 채팅방 ID
      * @return 읽지 않은 메시지 개수
      */
+    @Hidden // ChatRoomService에서 직접 계산하므로 연동 불필요
     @Operation(summary = "채팅방 읽지 않은 메시지 개수 조회 API", description = "특정 채팅방의 읽지 않은 메시지 개수를 조회합니다.")
     @ApiResponses({
             @ApiResponse(
