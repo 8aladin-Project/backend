@@ -71,4 +71,29 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
            "AND cm.sender != :member")
     long countUnreadMessagesForMember(@Param("member") Member member);
 
+    /**
+     * 채팅방의 메시지 목록을 페이징하여 조회 (커서 기반)
+     * @param chatRoom 채팅방
+     * @param beforeMessageId 기준 메시지 ID (이 ID보다 오래된 메시지만 조회)
+     * @param limit 조회할 메시지 개수
+     * @return 메시지 리스트
+     */
+    @Query("SELECT cm FROM ChatMessage cm WHERE cm.chatRoom = :chatRoom " +
+           "AND (:beforeMessageId IS NULL OR cm.id < :beforeMessageId) " +
+           "ORDER BY cm.sentAt DESC")
+    List<ChatMessage> findByChatRoomWithPaging(@Param("chatRoom") ChatRoom chatRoom,
+                                               @Param("beforeMessageId") Long beforeMessageId,
+                                               org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * 채팅방의 메시지 개수 조회 (페이징용)
+     * @param chatRoom 채팅방
+     * @param beforeMessageId 기준 메시지 ID
+     * @return 메시지 개수
+     */
+    @Query("SELECT COUNT(cm) FROM ChatMessage cm WHERE cm.chatRoom = :chatRoom " +
+           "AND (:beforeMessageId IS NULL OR cm.id < :beforeMessageId)")
+    long countByChatRoomWithPaging(@Param("chatRoom") ChatRoom chatRoom,
+                                   @Param("beforeMessageId") Long beforeMessageId);
+
 }
