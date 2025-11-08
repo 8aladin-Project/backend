@@ -81,7 +81,7 @@ public class ChatRoomDetailResponse {
         @Schema(description = "상품 이미지 URL")
         private String image;
 
-        @Schema(description = "판매 상태", example = "판매중")
+        @Schema(description = "판매 상태", example = "SELLING")
         private String status;
     }
 
@@ -116,10 +116,15 @@ public class ChatRoomDetailResponse {
 
     public static ProductInfo ofProduct(potato.backend.domain.product.domain.Product product) {
         String statusString;
-        if (product.getStatus() == potato.backend.domain.product.domain.Status.SELLING) {
-            statusString = "판매중";
-        } else {
-            statusString = "판매완료";
+        switch (product.getStatus()) {
+            case SELLING:
+                statusString = product.getStatus().name(); // "SELLING"
+                break;
+            case SOLD_OUT:
+                statusString = product.getStatus().name(); // "SOLD_OUT"
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown product status: " + product.getStatus());
         }
 
         return ProductInfo.builder()
