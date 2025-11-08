@@ -12,6 +12,7 @@ import potato.backend.domain.chat.dto.chatMessage.ChatSendRequest;
 import potato.backend.domain.chat.exception.ChatMessageNotFoundException;
 import potato.backend.domain.chat.exception.ChatParticipantNotFoundException;
 import potato.backend.domain.chat.exception.ChatRoomNotFoundException;
+import potato.backend.domain.chat.exception.InvalidPagingParameterException;
 import potato.backend.domain.chat.exception.MemberNotFoundException;
 import potato.backend.domain.chat.repository.ChatMessageRepository;
 import potato.backend.domain.chat.repository.ChatRoomRepository;
@@ -20,6 +21,12 @@ import potato.backend.domain.user.domain.Member;
 import potato.backend.domain.user.repository.MemberRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import potato.backend.domain.chat.dto.chatMessage.ChatMessageListResponse;
 
 @Slf4j
 @Service
@@ -168,5 +175,76 @@ public class ChatMessageService {
         }
 
         return chatMessageRepository.countByChatRoomAndIsReadAndSenderNot(chatRoom, false, member);
+    }
+
+    /**
+     * 한 채팅방의 메시지 목록을 페이징하여 조회하는 메서드
+     * @param roomId 채팅방 ID
+     * @param memberId 조회하는 사용자 ID (권한 확인용)
+     * @param limit 한 번에 조회할 메시지 개수 (기본값: 50)
+     * @param beforeMessageId 이 ID보다 오래된 메시지만 조회 (커서 기반 페이징)
+     * @return 메시지 목록 응답
+     */
+    public ChatMessageListResponse getMessagesInRoom(Long roomId, Long memberId, Integer limit, Long beforeMessageId) {
+        // 페이징 파라미터 검증
+        validatePagingParameters(limit, beforeMessageId);
+
+        // 기본값 설정
+        int actualLimit = (limit != null && limit > 0) ? Math.min(limit, 100) : 50; // 최대 100개로 제한
+
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ChatRoomNotFoundException(roomId));
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
+
+        if (!chatRoom.isParticipant(member)) {
+            throw new ChatParticipantNotFoundException(member.getId(), roomId);
+        }
+
+        // 페이징으로 메시지 조회 (최신순으로 정렬하되, 오래된 메시지부터 표시하기 위해 DESC로 조회)
+        Pageable pageable = PageRequest.of(0, actualLimit + 1); // +1로 다음 페이지 존재 여부 확인
+        List<potato.backend.domain.chat.domain.ChatMessage> messages =
+                chatMessageRepository.findByChatRoomWithPaging(chatRoom, beforeMessageId, pageable);
+
+        // 다음 페이지 존재 여부 확인
+        boolean hasMore = messages.size() > actualLimit;
+        String nextCursor = null;
+
+        if (hasMore) {
+            messages = messages.subList(0, actualLimit); // limit개만 반환
+            nextCursor = messages.get(messages.size() - 1).getId().toString();
+        }
+
+        // 오래된 메시지부터 최신순으로 정렬 (채팅방에서 메시지를 표시할 때는 시간순)
+        messages = messages.reversed();
+
+        // DTO 변환
+        List<ChatMessageListResponse.Message> messageDtos = messages.stream()
+                .map(ChatMessageListResponse::ofMessage)
+                .collect(Collectors.toList());
+
+        return ChatMessageListResponse.success(messageDtos, hasMore, nextCursor);
+    }
+
+    /**
+     * 페이징 파라미터 검증 메서드
+     * @param limit 한 번에 조회할 메시지 개수
+     * @param beforeMessageId 커서 기반 페이징을 위한 기준 메시지 ID
+     * @throws InvalidPagingParameterException 유효하지 않은 파라미터일 경우
+     */
+    private void validatePagingParameters(Integer limit, Long beforeMessageId) {
+        // limit 검증
+        if (limit != null && limit <= 0) {
+            throw new InvalidPagingParameterException("limit은 1 이상이어야 합니다");
+        }
+        if (limit != null && limit > 100) {
+            throw new InvalidPagingParameterException("limit은 100을 초과할 수 없습니다");
+        }
+
+        // beforeMessageId 검증 (양수여야 함)
+        if (beforeMessageId != null && beforeMessageId <= 0) {
+            throw new InvalidPagingParameterException("beforeMessageId는 1 이상이어야 합니다");
+        }
     }
 }
