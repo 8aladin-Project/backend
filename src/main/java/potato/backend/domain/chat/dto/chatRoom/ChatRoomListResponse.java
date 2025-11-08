@@ -73,6 +73,9 @@ public class ChatRoomListResponse {
             String timestamp,
             Long unreadCount,
             Boolean isOnline) {
+                if (roomId == null) {
+                    throw new IllegalArgumentException("roomId cannot be null");
+                }
 
         return ChatRoomSummary.builder()
                 .id(roomId.toString())
