@@ -2,6 +2,7 @@ package potato.backend.domain.chat.dto.chatRoom;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
  * 채팅방 목록 조회 응답 DTO
  */
 @Getter
+@Schema(description = "채팅방 목록 조회 응답")
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,6 +26,7 @@ public class ChatRoomListResponse {
     @Builder(access = AccessLevel.PRIVATE)
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @Schema(description = "응답 데이터")
     public static class Data {
         private List<ChatRoomSummary> rooms;
     }
@@ -32,6 +35,7 @@ public class ChatRoomListResponse {
     @Builder(access = AccessLevel.PRIVATE)
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @Schema(description = "채팅방 요약 정보")
     public static class ChatRoomSummary {
         private String id;
         private String userName;      // 상대방 이름

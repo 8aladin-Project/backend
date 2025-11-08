@@ -3,6 +3,7 @@ package potato.backend.domain.chat.dto.chatMessage;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
  * 채팅 메시지 목록 조회 응답 DTO
  */
 @Getter
+@Schema(description = "채팅 메시지 목록 조회 응답")
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -25,6 +27,7 @@ public class ChatMessageListResponse {
     @Builder(access = AccessLevel.PRIVATE)
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @Schema(description = "응답 데이터")
     public static class Data {
         private List<Message> messages;
         private boolean hasMore;
@@ -35,6 +38,7 @@ public class ChatMessageListResponse {
     @Builder(access = AccessLevel.PRIVATE)
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @Schema(description = "메시지 정보")
     public static class Message {
         private String id;
         private String senderId;
