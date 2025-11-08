@@ -2,6 +2,8 @@ package potato.backend.domain.chat.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -126,8 +128,9 @@ public class ChatRoomService {
         Member otherParticipant = getOtherParticipant(chatRoom, currentUserId);
 
         // 마지막 메시지 조회
-        String lastMessage = getLastMessageContent(chatRoom);
-        String lastMessageTime = getLastMessageTime(chatRoom);
+        potato.backend.domain.chat.domain.ChatMessage lastMessage = getLastMessage(chatRoom);
+        String lastMessageContent = lastMessage != null ? lastMessage.getContent() : null;
+        String lastMessageTime = lastMessage != null ? lastMessage.getSentAt().toString() : null;
 
         // 읽지 않은 메시지 개수 계산
         long unreadCount = chatMessageRepository.countByChatRoomAndIsReadAndSenderNot(
@@ -146,7 +149,7 @@ public class ChatRoomService {
                 productName,
                 chatRoom.getProduct() != null ? chatRoom.getProduct().getId().toString() : null,
                 productPrice,
-                lastMessage,
+                lastMessageContent,
                 lastMessageTime,
                 unreadCount,
                 false // 온라인 상태 (현재 구현되지 않음)
@@ -165,24 +168,13 @@ public class ChatRoomService {
     }
 
     /**
-     * 채팅방의 마지막 메시지 내용 조회
+     * 채팅방의 마지막 메시지 조회
      */
-    private String getLastMessageContent(ChatRoom chatRoom) {
-        return chatMessageRepository.findByChatRoomOrderBySentAtAsc(chatRoom)
+    private potato.backend.domain.chat.domain.ChatMessage getLastMessage(ChatRoom chatRoom) {
+        Pageable pageable = PageRequest.of(0, 1);
+        return chatMessageRepository.findByChatRoomWithPaging(chatRoom, null, pageable)
                 .stream()
-                .max(Comparator.comparing(potato.backend.domain.chat.domain.ChatMessage::getSentAt))
-                .map(potato.backend.domain.chat.domain.ChatMessage::getContent)
-                .orElse(null);
-    }
-
-    /**
-     * 채팅방의 마지막 메시지 시간 조회
-     */
-    private String getLastMessageTime(ChatRoom chatRoom) {
-        return chatMessageRepository.findByChatRoomOrderBySentAtAsc(chatRoom)
-                .stream()
-                .max(Comparator.comparing(potato.backend.domain.chat.domain.ChatMessage::getSentAt))
-                .map(msg -> msg.getSentAt().toString())
+                .findFirst()
                 .orElse(null);
     }
 
