@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import potato.backend.domain.chat.domain.ChatRoom;
 import potato.backend.domain.chat.dto.chatMessage.ChatRoomCreateRequest;
+import potato.backend.domain.chat.dto.chatRoom.ChatRoomDetailResponse;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomListResponse;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomResponse;
 import potato.backend.domain.chat.exception.ChatRoomNotFoundException;
@@ -55,13 +56,32 @@ public class ChatRoomService {
 
     /**
      * 채팅방 단건 조회 메서드
-     * @param chatRoomId
-     * @return 
+     * @param chatRoomId 채팅방 ID
+     * @return 채팅방 상세 정보
      */
-    public ChatRoomResponse getChatRoom(Long chatRoomId) {
+    public ChatRoomDetailResponse getChatRoom(Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ChatRoomNotFoundException(chatRoomId));
-        return ChatRoomResponse.from(chatRoom);
+
+        // 참가자 정보 생성
+        List<ChatRoomDetailResponse.Participant> participants = List.of(
+                ChatRoomDetailResponse.ofParticipant(chatRoom.getSeller()),
+                ChatRoomDetailResponse.ofParticipant(chatRoom.getBuyer())
+        );
+
+        // 상품 정보 생성
+        ChatRoomDetailResponse.ProductInfo product = null;
+        if (chatRoom.getProduct() != null) {
+            product = ChatRoomDetailResponse.ofProduct(chatRoom.getProduct());
+        }
+
+        return ChatRoomDetailResponse.success(
+                chatRoom.getId().toString(),
+                participants,
+                product,
+                chatRoom.getCreatedAt().toString(),
+                chatRoom.getUpdatedAt().toString()
+        );
     }
 
     /**

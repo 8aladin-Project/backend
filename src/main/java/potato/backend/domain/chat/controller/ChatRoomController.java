@@ -1,7 +1,5 @@
 package potato.backend.domain.chat.controller;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import potato.backend.domain.chat.dto.chatMessage.ChatRoomCreateRequest;
+import potato.backend.domain.chat.dto.chatRoom.ChatRoomDetailResponse;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomListResponse;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomResponse;
 import potato.backend.domain.chat.service.ChatRoomService;
@@ -96,24 +95,16 @@ public class ChatRoomController {
     }
 
     /**
-     * 채팅방 단건 조회 메서드
+     * 채팅방 상세 조회 메서드
      * @param chatRoomId 채팅방 아이디
-     * @return 채팅방 조회 결과
+     * @return 채팅방 상세 정보
      */
-    @Operation(summary = "채팅방 단건 조회 API", description = "채팅방 ID로 단일 채팅방 정보를 조회합니다.")
+    @Operation(summary = "채팅방 상세 조회 API", description = "채팅방 ID로 채팅방의 상세 정보(참가자, 상품 정보)를 조회합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(
-                    responseCode = "400",
-                    description = "잘못된 요청",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponse.class),
-                            examples = @ExampleObject(
-                                    name = "BAD_REQUEST",
-                                    value = "{\"errorCodeName\":\"BAD_REQUEST\",\"errorMessage\":\"잘못된 요청입니다\"}"
-                            )
-                    )
+                responseCode = "200",
+                description = "조회 성공",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ChatRoomDetailResponse.class))
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -141,7 +132,7 @@ public class ChatRoomController {
             )
     })
     @GetMapping("/{chatRoomId}")
-    public ChatRoomResponse getChatRoom(@PathVariable Long chatRoomId) {
+    public ChatRoomDetailResponse getChatRoom(@PathVariable Long chatRoomId) {
         return chatRoomService.getChatRoom(chatRoomId);
     }
 
