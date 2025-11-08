@@ -36,10 +36,24 @@ public class ChatReadResponse {
 
     // 기존 메서드들과의 호환성을 위한 메서드들
     public static ChatReadResponse ofMessage(Long messageId, Long memberId, boolean success) {
-        return ChatReadResponse.success(success ? 1 : 0);
+        Data data = Data.builder()
+                .readCount(success ? 1 : 0)
+                .build();
+
+        return ChatReadResponse.builder()
+                .success(success)
+                .data(data)
+                .build();
     }
 
     public static ChatReadResponse ofRoom(Long roomId, Long memberId, int readCount, boolean success) {
-        return ChatReadResponse.success(readCount);
+        Data data = Data.builder()
+                .readCount(readCount)
+                .build();
+
+        return ChatReadResponse.builder()
+                .success(success)
+                .data(data)
+                .build();
     }
 }
