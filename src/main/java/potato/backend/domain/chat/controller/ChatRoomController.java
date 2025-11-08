@@ -26,6 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import potato.backend.domain.chat.dto.chatMessage.ChatRoomCreateRequest;
+import potato.backend.domain.chat.dto.chatRoom.ChatRoomListResponse;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomResponse;
 import potato.backend.domain.chat.service.ChatRoomService;
 import potato.backend.global.exception.ErrorResponse;
@@ -149,9 +150,13 @@ public class ChatRoomController {
      * @param memberId 회원 아이디
      * @return 채팅방 목록
      */
-    @Operation(summary = "채팅방 목록 조회 API", description = "memberId를 기준으로 해당 회원이 참여 중인 채팅방을 필터링하여 반환합니다.")
+    @Operation(summary = "채팅방 목록 조회 API", description = "memberId를 기준으로 해당 회원이 참여 중인 채팅방을 상세 정보와 함께 반환합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "목록 조회 성공"),
+            @ApiResponse(
+                responseCode = "200",
+                description = "목록 조회 성공",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ChatRoomListResponse.class))
+            ),
             @ApiResponse(
                     responseCode = "500",
                     description = "서버 내부 오류",
@@ -166,9 +171,9 @@ public class ChatRoomController {
             )
     })
     @GetMapping
-    public List<ChatRoomResponse> getChatRooms(
-            @Parameter(description = "회원 ID, 참여 중인 채팅방만 반환합니다.")
-            @RequestParam(name = "memberId", required = false) Long memberId) {
-        return chatRoomService.getChatRooms(memberId);
+    public ChatRoomListResponse getChatRooms(
+            @Parameter(description = "회원 ID, 참여 중인 채팅방만 반환합니다.", required = true)
+            @RequestParam(name = "memberId") Long memberId) {
+        return chatRoomService.getChatRoomList(memberId);
     }
 }
