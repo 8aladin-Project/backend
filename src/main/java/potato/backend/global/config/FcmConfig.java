@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 @Configuration
 public class FcmConfig {
 
-    @Value("${FIREBASE_SERVICE_ACCOUNT_JSON:}")
+    @Value("${firebase.service-account-json:}")
     private String serviceAccountJson;
 
     @PostConstruct

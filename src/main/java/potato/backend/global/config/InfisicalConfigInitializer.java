@@ -39,6 +39,23 @@ public class InfisicalConfigInitializer implements ApplicationContextInitializer
                     .ignoreIfMissing()
                     .load();
             log.info("✓ Successfully loaded .env file");
+            
+            // .env 파일의 모든 값을 Spring Environment에 등록
+            if (this.dotenv != null) {
+                Map<String, Object> dotenvMap = new HashMap<>();
+                this.dotenv.entries().forEach(entry -> {
+                    dotenvMap.put(entry.getKey(), entry.getValue());
+                });
+                
+                if (!dotenvMap.isEmpty()) {
+                    // Infisical secrets보다 우선순위를 낮게 설정 (Infisical이 있으면 Infisical 값 사용)
+                    environment.getPropertySources().addAfter(
+                            "systemEnvironment",
+                            new MapPropertySource("dotenv", dotenvMap)
+                    );
+                    log.info("✓ Loaded {} properties from .env file into Spring Environment", dotenvMap.size());
+                }
+            }
         } catch (Exception e) {
             log.debug("No .env file found, using system environment variables");
             this.dotenv = null;
