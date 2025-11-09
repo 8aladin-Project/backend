@@ -54,13 +54,18 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/v3/api-docs.yaml",
+                                "/h2-console/**",  // H2 콘솔 허용
                                 "/ws-chat/**",  // WebSocket 엔드포인트 허용
                                 "/ws-chat",     // SockJS 엔드포인트 허용
                                 "/api/v1/wishlists/**",  // 위시리스트 API 임시 허용
                                 "/api/v1/chatrooms/**",  // 채팅 API 임시 허용
                                 "/api/v1/chat/**",  // 채팅 API 임시 허용
                                 "/api/v1/images/**",  // 이미지 업로드 API 허용
-                                "/api/v1/products/**"  // 상품 API 허용
+                                "/api/v1/products/**",  // 상품 API 허용
+                                "/websocket-test.html",  // WebSocket 테스트 페이지 허용
+                                "/fcm-token-test.html",  // FCM 토큰 테스트 페이지 허용
+                                "/firebase-messaging-sw.js",  // FCM 테스트용 서비스 워커 허용
+                                "/static/**"  // 정적 리소스 허용
 
                         ).permitAll()
                         .anyRequest().authenticated() // 개발용

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket + FCM 알림 테스트</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px 0;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn-connect {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-connect:hover {
+            background-color: #45a049;
+        }
+        .btn-disconnect {
+            background-color: #f44336;
+            color: white;
+        }
+        .btn-disconnect:hover {
+            background-color: #da190b;
+        }
+        .btn-action {
+            background-color: #2196F3;
+            color: white;
+        }
+        .btn-action:hover {
+            background-color: #0b7dda;
+        }
+        #messages {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status-connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info-box {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #2196F3;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .info-box li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 WebSocket + FCM 알림 테스트</h1>
+        
+        <div class="info-box">
+            <h3>📋 사용 방법</h3>
+            <ul>
+                <li>1. Member ID를 입력하세요 (회원 ID)</li>
+                <li>2. 채팅방 ID를 입력하세요</li>
+                <li>3. "연결" 버튼을 클릭하여 WebSocket 연결</li>
+                <li>4. "구독" 버튼을 클릭하여 채팅방 구독</li>
+                <li>5. "메시지 전송" 버튼으로 메시지 전송 테스트</li>
+                <li>6. 다른 사용자가 오프라인이면 FCM 알림이 발송됩니다</li>
+            </ul>
+        </div>
+
+        <div id="status" class="status status-disconnected">
+            상태: 연결 안 됨
+        </div>
+
+        <div class="section">
+            <label>Member ID:</label>
+            <input type="number" id="memberId" value="1" placeholder="회원 ID를 입력하세요" />
+        </div>
+
+        <div class="section">
+            <label>Room ID:</label>
+            <input type="number" id="roomId" value="1" />
+        </div>
+
+        <div class="section">
+            <button class="btn-connect" onclick="connect()">🔌 연결</button>
+            <button class="btn-disconnect" onclick="disconnect()">❌ 연결 해제</button>
+            <button class="btn-action" onclick="subscribe()">📡 구독</button>
+            <button class="btn-action" onclick="unsubscribe()">📴 구독 해제</button>
+            <button class="btn-action" onclick="sendMessage()">📤 메시지 전송</button>
+            <button class="btn-action" onclick="checkConnection()">🔍 연결 상태 확인</button>
+        </div>
+
+        <div class="section">
+            <label>메시지 로그:</label>
+            <textarea id="messages" readonly></textarea>
+        </div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let subscription = null;
+
+        function addMessage(message, type = 'info') {
+            const messagesDiv = document.getElementById('messages');
+            const timestamp = new Date().toLocaleTimeString('ko-KR');
+            const emoji = {
+                'success': '✅',
+                'error': '❌',
+                'info': 'ℹ️',
+                'warning': '⚠️',
+                'send': '📤',
+                'receive': '📨',
+                'connect': '🔌',
+                'disconnect': '🔌'
+            }[type] || 'ℹ️';
+            
+            messagesDiv.value += `[${timestamp}] ${emoji} ${message}\n`;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function updateStatus(connected) {
+            const statusDiv = document.getElementById('status');
+            if (connected) {
+                statusDiv.className = 'status status-connected';
+                statusDiv.textContent = '상태: 연결됨 ✅';
+            } else {
+                statusDiv.className = 'status status-disconnected';
+                statusDiv.textContent = '상태: 연결 안 됨 ❌';
+            }
+        }
+
+        function connect() {
+            const memberId = document.getElementById('memberId').value.trim();
+            
+            if (!memberId) {
+                alert('Member ID를 입력하세요!');
+                return;
+            }
+
+            addMessage('WebSocket 연결 시도 중...', 'info');
+            
+            // 쿼리 파라미터로 memberId 전달
+            const wsUrl = 'http://localhost:8080/ws-chat?memberId=' + encodeURIComponent(memberId);
+            const socket = new SockJS(wsUrl);
+            
+            stompClient = new StompJs.Client({
+                webSocketFactory: () => socket,
+                connectHeaders: {},
+                debug: function(str) {
+                    console.log('STOMP Debug:', str);
+                },
+                reconnectDelay: 5000,
+                heartbeatIncoming: 4000,
+                heartbeatOutgoing: 4000,
+            });
+
+            stompClient.onConnect = function(frame) {
+                console.log('Connected:', frame);
+                addMessage('WebSocket 연결 성공!', 'success');
+                addMessage(`서버 응답: ${JSON.stringify(frame.headers, null, 2)}`, 'info');
+                updateStatus(true);
+            };
+
+            stompClient.onDisconnect = function() {
+                console.log('Disconnected');
+                addMessage('WebSocket 연결이 종료되었습니다.', 'disconnect');
+                updateStatus(false);
+            };
+
+            stompClient.onStompError = function(frame) {
+                console.error('STOMP Error:', frame);
+                const errorMsg = frame.headers['message'] || '알 수 없는 오류';
+                const errorDetails = frame.body || '';
+                addMessage(`연결 실패: ${errorMsg}`, 'error');
+                if (errorDetails) {
+                    addMessage(`상세: ${errorDetails}`, 'error');
+                }
+                updateStatus(false);
+            };
+
+            stompClient.onWebSocketError = function(error) {
+                console.error('WebSocket Error:', error);
+                addMessage(`WebSocket 오류: ${error.message || error}`, 'error');
+                updateStatus(false);
+            };
+
+            stompClient.activate();
+        }
+
+        function disconnect() {
+            if (subscription) {
+                subscription.unsubscribe();
+                subscription = null;
+                addMessage('채팅방 구독 해제됨', 'disconnect');
+            }
+            
+            if (stompClient !== null) {
+                stompClient.deactivate();
+                addMessage('WebSocket 연결 해제됨', 'disconnect');
+                updateStatus(false);
+            }
+        }
+
+        function subscribe() {
+            if (stompClient === null || !stompClient.connected) {
+                addMessage('먼저 연결하세요!', 'error');
+                return;
+            }
+
+            const roomId = document.getElementById('roomId').value;
+            
+            if (!roomId) {
+                addMessage('채팅방 ID를 입력하세요!', 'error');
+                return;
+            }
+
+            const destination = '/topic/chat/' + roomId;
+            
+            if (subscription) {
+                addMessage('이전 구독을 해제하고 다시 구독합니다.', 'warning');
+                subscription.unsubscribe();
+                subscription = null;
+            }
+
+            subscription = stompClient.subscribe(destination, function(message) {
+                try {
+                    const body = JSON.parse(message.body);
+                    addMessage(`메시지 수신: ${JSON.stringify(body, null, 2)}`, 'receive');
+                } catch (e) {
+                    addMessage(`메시지 수신 (파싱 실패): ${message.body}`, 'receive');
+                }
+            });
+            
+            addMessage(`채팅방 구독 완료: ${destination}`, 'success');
+        }
+
+        function unsubscribe() {
+            if (subscription) {
+                subscription.unsubscribe();
+                subscription = null;
+                addMessage('채팅방 구독 해제됨', 'disconnect');
+            } else {
+                addMessage('구독 중인 채팅방이 없습니다.', 'warning');
+            }
+        }
+
+        function sendMessage() {
+            if (stompClient === null || !stompClient.connected) {
+                addMessage('먼저 연결하세요!', 'error');
+                return;
+            }
+
+            const roomId = document.getElementById('roomId').value;
+            const memberId = document.getElementById('memberId').value;
+            
+            if (!roomId || !memberId) {
+                addMessage('채팅방 ID와 Member ID를 입력하세요!', 'error');
+                return;
+            }
+
+            const content = prompt('메시지 내용을 입력하세요:');
+            
+            if (!content || content.trim() === '') {
+                addMessage('메시지 내용이 없습니다.', 'warning');
+                return;
+            }
+            
+            const message = {
+                senderId: parseInt(memberId),
+                content: content.trim()
+            };
+            
+            const destination = '/app/api/v1/chat/' + roomId;
+            
+            try {
+                stompClient.publish({
+                    destination: destination,
+                    body: JSON.stringify(message)
+                });
+                
+                addMessage(`메시지 전송 완료: "${content}"`, 'send');
+                addMessage(`전송 경로: ${destination}`, 'info');
+                addMessage(`전송 데이터: ${JSON.stringify(message, null, 2)}`, 'info');
+            } catch (error) {
+                addMessage(`메시지 전송 실패: ${error.message}`, 'error');
+            }
+        }
+
+        function checkConnection() {
+            if (stompClient === null) {
+                addMessage('STOMP 클라이언트가 초기화되지 않았습니다.', 'warning');
+                return;
+            }
+
+            if (stompClient.connected) {
+                addMessage('✅ 연결 상태: 연결됨', 'success');
+                addMessage(`서버: ${stompClient.ws ? 'WebSocket 연결됨' : 'WebSocket 연결 안 됨'}`, 'info');
+                
+                if (subscription) {
+                    addMessage('✅ 구독 상태: 구독 중', 'success');
+                } else {
+                    addMessage('⚠️ 구독 상태: 구독 안 함', 'warning');
+                }
+            } else {
+                addMessage('❌ 연결 상태: 연결 안 됨', 'error');
+            }
+        }
+
+        // 페이지 로드 시 안내 메시지
+        window.onload = function() {
+            addMessage('=== WebSocket 테스트 도구 시작 ===', 'info');
+            addMessage('1. JWT 토큰을 입력하세요', 'info');
+            addMessage('2. "연결" 버튼을 클릭하세요', 'info');
+            addMessage('3. "구독" 버튼을 클릭하여 채팅방 구독', 'info');
+            addMessage('4. "메시지 전송" 버튼으로 메시지 테스트', 'info');
+        };
+    </script>
+</body>
+</html>
+
