@@ -3,8 +3,11 @@ package potato.backend.domain.notification.service;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
+import java.util.concurrent.ExecutionException;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import potato.backend.domain.user.domain.Member;
@@ -57,24 +60,36 @@ public class FcmService {
                     .putData("senderName", senderName)
                     .build();
 
-            String response = firebaseMessaging.send(message);
-            log.info("FCM 알림 전송 성공: recipientId={}, roomId={}, response={}", 
-                    recipient.getId(), roomId, response);
+            final var future = firebaseMessaging.sendAsync(message);
+            future.addListener(() -> {
+                try {
+                    String result = future.get();
+                    log.info("FCM 알림 전송 성공: recipientId={}, roomId={}, response={}",
+                            recipient.getId(), roomId, result);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    log.warn("FCM 알림 전송 콜백 처리 중 인터럽트 발생: recipientId={}, roomId={}",
+                            recipient.getId(), roomId, ie);
+                } catch (ExecutionException ee) {
+                    Throwable cause = ee.getCause();
+                    if (cause instanceof FirebaseMessagingException messagingException) {
+                        MessagingErrorCode errorCode = messagingException.getMessagingErrorCode();
+                        log.error("FCM 알림 전송 실패(비동기): recipientId={}, roomId={}, error={}",
+                                recipient.getId(), roomId, messagingException.getMessage(), messagingException);
+                        if (errorCode == MessagingErrorCode.INVALID_ARGUMENT ||
+                                errorCode == MessagingErrorCode.UNREGISTERED) {
+                            log.warn("유효하지 않은 FCM 토큰(비동기): recipientId={}, fcmToken={}",
+                                    recipient.getId(), fcmToken);
+                            // TODO: Member 엔티티의 fcmToken을 null로 업데이트하는 로직 추가 가능
+                        }
+                    } else {
+                        log.error("FCM 알림 전송 실패(비동기): recipientId={}, roomId={}, error={}",
+                                recipient.getId(), roomId, ee.getMessage(), ee);
+                    }
+                }
+            }, Runnable::run);
             return true;
 
-        } catch (FirebaseMessagingException e) {
-            log.error("FCM 알림 전송 실패: recipientId={}, roomId={}, error={}", 
-                    recipient.getId(), roomId, e.getMessage(), e);
-            
-            // 유효하지 않은 토큰인 경우 (사용자가 앱을 삭제했거나 토큰이 만료된 경우)
-            if (e.getErrorCode() != null && (
-                    e.getErrorCode().equals("invalid-registration-token") ||
-                    e.getErrorCode().equals("registration-token-not-registered"))) {
-                log.warn("유효하지 않은 FCM 토큰: recipientId={}, fcmToken={}", 
-                        recipient.getId(), fcmToken);
-                // TODO: Member 엔티티의 fcmToken을 null로 업데이트하는 로직 추가 가능
-            }
-            return false;
         } catch (Exception e) {
             log.error("FCM 알림 전송 중 예상치 못한 오류: recipientId={}, roomId={}", 
                     recipient.getId(), roomId, e);
