@@ -10,7 +10,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import potato.backend.domain.user.dto.FcmTokenRequest;
 import potato.backend.domain.user.dto.FcmTokenResponse;
@@ -53,7 +52,6 @@ public class MemberController {
             )
     })
     @PutMapping("/fcm-token")
-    @Transactional
     public ResponseEntity<FcmTokenResponse> registerFcmToken(
             @Valid @RequestBody FcmTokenRequest request) {
         
