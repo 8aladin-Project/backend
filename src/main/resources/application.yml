@@ -30,29 +30,6 @@ spring:
       max-file-size: 10MB
       max-request-size: 50MB
 
-# Logging Configuration
-logging:
-  level:
-    potato.backend.domain.product: DEBUG
-    potato.backend.domain.image: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.hibernate.orm.jdbc.bind: TRACE
-
-# AWS S3 Configuration
-cloud:
-  aws:
-    s3:
-      enabled: ${AWS_S3_ENABLED:true}  # S3 비활성화 (필요시 true로 설정)
-      bucket: ${AWS_S3_BUCKET:your-bucket-name}
-      endpoint: ${AWS_S3_ENDPOINT:#{null}}  # MinIO 등 사용 시 설정
-      path-style: ${AWS_S3_PATH_STYLE:false}  # MinIO 사용 시 true
-    credentials:
-      access-key: ${AWS_ACCESS_KEY:your-access-key}
-      secret-key: ${AWS_SECRET_KEY:your-secret-key}
-    region:
-      static: ${AWS_REGION:ap-northeast-2}
-
   # OAuth2 Client
   security:
     oauth2:
@@ -96,9 +73,35 @@ cloud:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
+# Logging Configuration
+logging:
+  level:
+    potato.backend.domain.product: DEBUG
+    potato.backend.domain.image: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.orm.jdbc.bind: TRACE
+
+# AWS S3 Configuration
+cloud:
+  aws:
+    s3:
+      enabled: ${AWS_S3_ENABLED:true}  # S3 비활성화 (필요시 true로 설정)
+      bucket: ${AWS_S3_BUCKET:your-bucket-name}
+      endpoint: ${AWS_S3_ENDPOINT:#{null}}  # MinIO 등 사용 시 설정
+      path-style: ${AWS_S3_PATH_STYLE:false}  # MinIO 사용 시 true
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:your-access-key}
+      secret-key: ${AWS_SECRET_KEY:your-secret-key}
+    region:
+      static: ${AWS_REGION:ap-northeast-2}
+
 jwt:
   public-key: ${JWT_PUBLIC_KEY}
   private-key: ${JWT_PRIVATE_KEY}
+
+firebase:
+  service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON:}
 
 # Infisical Configuration
 # dev 환경: CLI 방식 (인증 없이 하드코딩된 PROJECT_ID 사용)
