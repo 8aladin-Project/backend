@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Objects;
 
 /**
  * WebSocket 세션 관리를 위한 컴포넌트
@@ -35,14 +36,12 @@ public class ChatSessionManager {
      * @param memberId 사용자 ID
      */
     public void removeSession(Long roomId, Long memberId) {
-        Set<Long> members = roomSessions.get(roomId);
-        if (members != null) {
-            members.remove(memberId);
-            if (members.isEmpty()) {
-                roomSessions.remove(roomId);
+        roomSessions.computeIfPresent(roomId, (k, members) -> {
+            if (members.remove(memberId)) {
+                log.debug("사용자가 채팅방에서 연결 해제됨: roomId={}, memberId={}", roomId, memberId);
             }
-            log.debug("사용자가 채팅방에서 연결 해제됨: roomId={}, memberId={}", roomId, memberId);
-        }
+            return members.isEmpty() ? null : members;
+        });
     }
 
     /**
@@ -70,14 +69,13 @@ public class ChatSessionManager {
      * @param memberId 사용자 ID
      */
     public void removeAllSessions(Long memberId) {
-        roomSessions.forEach((roomId, members) -> {
+        roomSessions.replaceAll((roomId, members) -> {
             if (members.remove(memberId)) {
                 log.debug("사용자가 모든 채팅방에서 연결 해제됨: memberId={}", memberId);
             }
-            if (members.isEmpty()) {
-                roomSessions.remove(roomId);
-            }
+            return members.isEmpty() ? null : members;
         });
+        roomSessions.values().removeIf(Objects::isNull);
     }
 }
 
