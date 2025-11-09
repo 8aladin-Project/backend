@@ -80,7 +80,7 @@ dependencies {
 	implementation 'io.github.cdimascio:dotenv-java:3.0.2'
 
 	// Firebase Admin SDK for FCM
-	implementation 'com.google.firebase:firebase-admin:9.4.2'
+	implementation 'com.google.firebase:firebase-admin:9.3.0'
 
 }
 
