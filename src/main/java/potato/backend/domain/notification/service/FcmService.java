@@ -6,11 +6,12 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
-import java.util.concurrent.ExecutionException;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import potato.backend.domain.user.domain.Member;
+import potato.backend.domain.user.service.MemberService;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Firebase Cloud Messaging (FCM) 알림 전송 서비스
@@ -21,6 +22,7 @@ import potato.backend.domain.user.domain.Member;
 public class FcmService {
 
     private final FirebaseMessaging firebaseMessaging;
+    private final MemberService memberService;
 
     /**
      * 채팅 메시지 알림 전송
@@ -78,9 +80,7 @@ public class FcmService {
                                 recipient.getId(), roomId, messagingException.getMessage(), messagingException);
                         if (errorCode == MessagingErrorCode.INVALID_ARGUMENT ||
                                 errorCode == MessagingErrorCode.UNREGISTERED) {
-                            log.warn("유효하지 않은 FCM 토큰(비동기): recipientId={}, fcmToken={}",
-                                    recipient.getId(), fcmToken);
-                            // TODO: Member 엔티티의 fcmToken을 null로 업데이트하는 로직 추가 가능
+                            handleInvalidToken(recipient.getId(), fcmToken);
                         }
                     } else {
                         log.error("FCM 알림 전송 실패(비동기): recipientId={}, roomId={}, error={}",
@@ -111,6 +111,11 @@ public class FcmService {
             return message;
         }
         return message.substring(0, maxLength) + "...";
+    }
+
+    private void handleInvalidToken(Long memberId, String fcmToken) {
+        log.warn("유효하지 않은 FCM 토큰: memberId={}, fcmToken={}", memberId, fcmToken);
+        memberService.clearFcmToken(memberId);
     }
 }
 

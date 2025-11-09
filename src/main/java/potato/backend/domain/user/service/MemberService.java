@@ -32,5 +32,18 @@ public class MemberService {
         member.updateFcmToken(fcmToken);
         log.info("FCM 토큰 업데이트 완료: memberId={}", memberId);
     }
+
+    /**
+     * FCM 토큰 제거
+     * @param memberId 회원 ID
+     */
+    @Transactional
+    public void clearFcmToken(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
+
+        member.updateFcmToken(null);
+        log.info("유효하지 않은 FCM 토큰 제거: memberId={}", memberId);
+    }
 }
 
