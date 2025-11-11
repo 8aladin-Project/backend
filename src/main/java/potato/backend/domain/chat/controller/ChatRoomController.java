@@ -1,7 +1,5 @@
 package potato.backend.domain.chat.controller;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +24,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import potato.backend.domain.chat.dto.chatMessage.ChatRoomCreateRequest;
+import potato.backend.domain.chat.dto.chatRoom.ChatRoomDetailResponse;
+import potato.backend.domain.chat.dto.chatRoom.ChatRoomListResponse;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomResponse;
 import potato.backend.domain.chat.service.ChatRoomService;
 import potato.backend.global.exception.ErrorResponse;
@@ -95,24 +95,16 @@ public class ChatRoomController {
     }
 
     /**
-     * 채팅방 단건 조회 메서드
+     * 채팅방 상세 조회 메서드
      * @param chatRoomId 채팅방 아이디
-     * @return 채팅방 조회 결과
+     * @return 채팅방 상세 정보
      */
-    @Operation(summary = "채팅방 단건 조회 API", description = "채팅방 ID로 단일 채팅방 정보를 조회합니다.")
+    @Operation(summary = "채팅방 상세 조회 API", description = "채팅방 ID로 채팅방의 상세 정보(참가자, 상품 정보)를 조회합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(
-                    responseCode = "400",
-                    description = "잘못된 요청",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponse.class),
-                            examples = @ExampleObject(
-                                    name = "BAD_REQUEST",
-                                    value = "{\"errorCodeName\":\"BAD_REQUEST\",\"errorMessage\":\"잘못된 요청입니다\"}"
-                            )
-                    )
+                responseCode = "200",
+                description = "조회 성공",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ChatRoomDetailResponse.class))
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -140,7 +132,7 @@ public class ChatRoomController {
             )
     })
     @GetMapping("/{chatRoomId}")
-    public ChatRoomResponse getChatRoom(@PathVariable Long chatRoomId) {
+    public ChatRoomDetailResponse getChatRoom(@PathVariable Long chatRoomId) {
         return chatRoomService.getChatRoom(chatRoomId);
     }
 
@@ -149,9 +141,13 @@ public class ChatRoomController {
      * @param memberId 회원 아이디
      * @return 채팅방 목록
      */
-    @Operation(summary = "채팅방 목록 조회 API", description = "memberId를 기준으로 해당 회원이 참여 중인 채팅방을 필터링하여 반환합니다.")
+    @Operation(summary = "채팅방 목록 조회 API", description = "memberId를 기준으로 해당 회원이 참여 중인 채팅방을 상세 정보와 함께 반환합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "목록 조회 성공"),
+            @ApiResponse(
+                responseCode = "200",
+                description = "목록 조회 성공",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ChatRoomListResponse.class))
+            ),
             @ApiResponse(
                     responseCode = "500",
                     description = "서버 내부 오류",
@@ -166,9 +162,9 @@ public class ChatRoomController {
             )
     })
     @GetMapping
-    public List<ChatRoomResponse> getChatRooms(
-            @Parameter(description = "회원 ID, 참여 중인 채팅방만 반환합니다.")
-            @RequestParam(name = "memberId", required = false) Long memberId) {
-        return chatRoomService.getChatRooms(memberId);
+    public ChatRoomListResponse getChatRooms(
+            @Parameter(description = "회원 ID, 참여 중인 채팅방만 반환합니다.", required = true)
+            @RequestParam(name = "memberId") Long memberId) {
+        return chatRoomService.getChatRoomList(memberId);
     }
 }

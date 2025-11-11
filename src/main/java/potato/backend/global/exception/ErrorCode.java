@@ -46,7 +46,10 @@ public enum ErrorCode {
     INVALID_CHAT_ROOM_PARTICIPANTS(HttpStatus.BAD_REQUEST, "채팅방 참가자가 유효하지 않습니다"),
     CHAT_MESSAGE_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 메시지입니다"),
 
-    INVALID_ARGUMENT(HttpStatus.BAD_REQUEST, "유효하지 않은 인자입니다")
+    INVALID_ARGUMENT(HttpStatus.BAD_REQUEST, "유효하지 않은 인자입니다"),
+
+    // 페이징
+    INVALID_PAGING_PARAMETER(HttpStatus.BAD_REQUEST, "유효하지 않은 페이징 파라미터입니다")
     ;
     private final HttpStatus httpStatus;
     private final String message;
