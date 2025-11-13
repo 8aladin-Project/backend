@@ -98,7 +98,7 @@ public class AuthController {
         // 3. 조회된 리프레시 토큰과 쿠키의 리프레시 토큰 비교
         if (storedTokenOpt.isEmpty() || !Objects.equals(storedTokenOpt.get().getToken(), refreshTokenCookie)) {
             storedTokenOpt.ifPresent(token -> refreshTokenRepository.deleteById(memberId));
-            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
