@@ -1,0 +1,140 @@
+spring:
+  application:
+    name: session
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    serialization:
+      write-dates-as-timestamps: false
+      write-dates-with-zone-id: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        highlight_sql: true
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        use_sql_comments: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+# Logging Configuration
+logging:
+  level:
+    potato.backend.domain.product: DEBUG
+    potato.backend.domain.image: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.orm.jdbc.bind: TRACE
+
+# AWS S3 Configuration
+cloud:
+  aws:
+    s3:
+      enabled: ${AWS_S3_ENABLED:true}  # S3 비활성화 (필요시 true로 설정)
+      bucket: ${AWS_S3_BUCKET:your-bucket-name}
+      endpoint: ${AWS_S3_ENDPOINT:#{null}}  # MinIO 등 사용 시 설정
+      path-style: ${AWS_S3_PATH_STYLE:false}  # MinIO 사용 시 true
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:your-access-key}
+      secret-key: ${AWS_SECRET_KEY:your-secret-key}
+    region:
+      static: ${AWS_REGION:ap-northeast-2}
+
+  # OAuth2 Client
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - profile
+              - email
+          naver:
+            client-id: ${NAVER_CLIENT_ID}
+            client-secret: ${NAVER_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - name
+              - email
+            client-name: Naver
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - profile_nickname
+              - account_email
+            client-name: Kakao
+        provider:
+          naver:
+            authorization-uri: https://nid.naver.com/oauth2.0/authorize
+            token-uri: https://nid.naver.com/oauth2.0/token
+            user-info-uri: https://openapi.naver.com/v1/nid/me
+            user-name-attribute: response
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kapi.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+jwt:
+  public-key: ${JWT_PUBLIC_KEY}
+  private-key: ${JWT_PRIVATE_KEY}
+
+# Infisical Configuration
+# dev 환경: CLI 방식 (인증 없이 하드코딩된 PROJECT_ID 사용)
+# prod 환경: SDK 방식 (.env 파일에서 credentials 로드)
+# 명시적 설정: INFISICAL_USE_CLI_AUTH=true/false로 명시적 설정 가능
+infisical:
+  enabled: true  # 기본적으로 활성화 (비활성화하려면 INFISICAL_ENABLED=false 설정)
+  project-id: ${INFISICAL_PROJECT_ID:5936eede-5b19-4d5f-84aa-e48380617257}
+  environment: ${INFISICAL_ENVIRONMENT:dev}
+  secrets-path: ${INFISICAL_SECRETS_PATH:/}
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,env,configprops
+      base-path: /actuator
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+      environment: ${spring.profiles.active:default}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        jvm.memory.used: true
+        process.cpu.usage: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+        jvm.memory.used: 0.5,0.95,0.99
+        process.cpu.usage: 0.5,0.95,0.99

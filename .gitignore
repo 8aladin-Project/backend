@@ -18,10 +18,30 @@
 *.zip
 *.tar.gz
 *.rar
-
+*.env
+*.idea
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
 
 # intellij
 .idea/
+
+# Maven
+target/
+
+# Gradle
+build/
+.gradle/
+bin/
+
+# intelliJ
+.idea/
+
+# 테스트용 파일
+chat-test.html
+/.infisical.json
+/.run/BackendApplication with Infisical.run.xml
+/.infisical.json
+/.run/BackendApplication with Infisical.run.xml
+>>>>>>> dev
