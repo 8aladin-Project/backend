@@ -47,7 +47,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 response,
                 REFRESH_TOKEN_COOKIE_NAME,
                 refreshToken,
-                "/auth",
+                "/api/v1/auth",
                 SameSite.NONE,
                 UrlUtil.getRegistrableDomain(request.getServerName()),
                 REFRESH_TOKEN_EXPIRATION_SECONDS);

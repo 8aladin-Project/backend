@@ -72,7 +72,7 @@ public class AuthController {
 
         // 1. 리프레시 토큰 검증
         if (!jwtUtil.validateToken(refreshTokenCookie)) {
-            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -80,7 +80,7 @@ public class AuthController {
         try {
             claims = jwtUtil.getClaims(refreshTokenCookie);
         } catch (Exception e) {
-            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -89,7 +89,7 @@ public class AuthController {
         try {
             memberId = Long.parseLong(claims.getSubject());
         } catch (NumberFormatException e) {
-            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -105,7 +105,7 @@ public class AuthController {
         // 4. UserInfo 객체를 위해 Member 엔티티 조회
         Member member = memberRepository.findById(memberId).orElseThrow(() -> {
             refreshTokenRepository.deleteById(memberId);
-            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
             return new CustomException(
                     ErrorCode.MEMBER_NOT_FOUND, ErrorCode.MEMBER_NOT_FOUND.getMessage() + ": id=" + memberId);
         });
@@ -137,7 +137,7 @@ public class AuthController {
         }
 
         // 리프레시 토큰 쿠키 삭제
-        CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+        CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
 
         // 스프링 시큐리티 컨텍스트 초기화
         SecurityContextHolder.clearContext();
