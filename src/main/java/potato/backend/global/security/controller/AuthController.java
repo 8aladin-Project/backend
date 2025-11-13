@@ -37,10 +37,10 @@ import potato.backend.global.util.CookieUtil;
 
 import static potato.backend.global.constant.SecurityConstant.REFRESH_TOKEN_COOKIE_NAME;
 
-@Tag(name = "인증")
+@Tag(name = "auth")
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -49,7 +49,7 @@ public class AuthController {
     private final RefreshTokenRepository refreshTokenRepository;
     private final MemberRepository memberRepository;
 
-    @PostMapping("/issue")
+    @PostMapping("/token/issue")
     @Operation(
             summary = "Access Token 발급",
             description = "Refresh Token을 사용하여 Access Token을 발급합니다.",
@@ -72,7 +72,7 @@ public class AuthController {
 
         // 1. 리프레시 토큰 검증
         if (!jwtUtil.validateToken(refreshTokenCookie)) {
-            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -80,7 +80,7 @@ public class AuthController {
         try {
             claims = jwtUtil.getClaims(refreshTokenCookie);
         } catch (Exception e) {
-            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -89,7 +89,7 @@ public class AuthController {
         try {
             memberId = Long.parseLong(claims.getSubject());
         } catch (NumberFormatException e) {
-            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -98,14 +98,14 @@ public class AuthController {
         // 3. 조회된 리프레시 토큰과 쿠키의 리프레시 토큰 비교
         if (storedTokenOpt.isEmpty() || !Objects.equals(storedTokenOpt.get().getToken(), refreshTokenCookie)) {
             storedTokenOpt.ifPresent(token -> refreshTokenRepository.deleteById(memberId));
-            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         // 4. UserInfo 객체를 위해 Member 엔티티 조회
         Member member = memberRepository.findById(memberId).orElseThrow(() -> {
             refreshTokenRepository.deleteById(memberId);
-            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
             return new CustomException(
                     ErrorCode.MEMBER_NOT_FOUND, ErrorCode.MEMBER_NOT_FOUND.getMessage() + ": id=" + memberId);
         });
@@ -137,7 +137,7 @@ public class AuthController {
         }
 
         // 리프레시 토큰 쿠키 삭제
-        CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/auth");
+        CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
 
         // 스프링 시큐리티 컨텍스트 초기화
         SecurityContextHolder.clearContext();
