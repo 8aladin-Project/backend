@@ -5,6 +5,7 @@ import java.util.List;
 public class UrlConstant {
 
     public static final String LIVE_CLIENT_URL = "https://8aladin.shop";
+    public static final String LIVE_FRONTEND_URL = "https://frontend.8aladin.shop";
     public static final String LIVE_SERVER_URL = "https://api.8aladin.shop";
 
     public static final String LOCAL_CLIENT_URL = "http://localhost:3000";
@@ -16,7 +17,8 @@ public class UrlConstant {
             LIVE_CLIENT_URL,
             LOCAL_CLIENT_URL,
             LOCAL_SERVER_URL,
-            LIVE_SERVER_URL);
+            LIVE_SERVER_URL,
+            LIVE_FRONTEND_URL);  
 
     public static final String LIVE_CLIENT_HOST = "8aladin.shop";
 }
