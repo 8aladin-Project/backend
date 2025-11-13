@@ -37,10 +37,10 @@ import potato.backend.global.util.CookieUtil;
 
 import static potato.backend.global.constant.SecurityConstant.REFRESH_TOKEN_COOKIE_NAME;
 
-@Tag(name = "인증")
+@Tag(name = "auth")
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -49,7 +49,7 @@ public class AuthController {
     private final RefreshTokenRepository refreshTokenRepository;
     private final MemberRepository memberRepository;
 
-    @PostMapping("/issue")
+    @PostMapping("/token/issue")
     @Operation(
             summary = "Access Token 발급",
             description = "Refresh Token을 사용하여 Access Token을 발급합니다.",
