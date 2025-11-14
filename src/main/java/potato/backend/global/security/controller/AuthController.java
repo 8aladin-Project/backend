@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,8 +35,12 @@ import potato.backend.global.security.jwt.RefreshToken;
 import potato.backend.global.security.jwt.RefreshTokenRepository;
 import potato.backend.global.security.oauth.UserInfo;
 import potato.backend.global.util.CookieUtil;
+import potato.backend.global.util.UrlUtil;
+
+import org.springframework.boot.web.server.Cookie.SameSite;
 
 import static potato.backend.global.constant.SecurityConstant.REFRESH_TOKEN_COOKIE_NAME;
+import static potato.backend.global.constant.SecurityConstant.REFRESH_TOKEN_EXPIRATION_SECONDS;
 
 @Tag(name = "auth")
 @Slf4j
