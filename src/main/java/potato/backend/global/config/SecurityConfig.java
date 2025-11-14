@@ -25,8 +25,6 @@ import potato.backend.global.security.oauth.CustomAuthorizationRequestRepository
 import potato.backend.global.security.oauth.CustomOAuth2UserService;
 import potato.backend.global.security.oauth.CustomSuccessHandler;
 
-import static potato.backend.global.constant.UrlConstant.ALLOWED_CLIENT_URLS;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -89,7 +87,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(ALLOWED_CLIENT_URLS);
+        configuration.setAllowedOrigins(List.of(
+                "https://api.8aladin.shop",  // Swagger UI 도메인 추가
+                "https://frontend.8aladin.shop",  // 실제 프론트엔드 도메인
+                "http://localhost:3000"           // 로컬 개발용
+        ));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Set-Cookie"));
