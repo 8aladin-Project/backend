@@ -1,11 +1,23 @@
 package potato.backend.global.config;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+@OpenAPIDefinition(
+        servers = {
+                @Server(url = "/", description = "서버의 상대 경로"),
+                @Server(url = "https://api.8aladin.shop", description = "8ladin 배포 서버입니다."),
+                @Server(url = "http://localhost:8080", description = "8ladin 로컬 서버입니다."),
+
+        }
+)
+
 
 @Configuration
 public class SwaggerConfig {
