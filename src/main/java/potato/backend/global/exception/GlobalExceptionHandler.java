@@ -26,6 +26,7 @@ import potato.backend.domain.chat.exception.MemberNotFoundException;
 import potato.backend.domain.image.exception.ImageNotFoundException;
 import potato.backend.domain.image.exception.ImageUploadException;
 import potato.backend.domain.image.exception.InvalidImageException;
+import potato.backend.domain.product.exception.ProductNotFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -144,10 +145,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(ImageNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleImageNotFoundException(ImageNotFoundException e) {
+    public ResponseEntity<Void> handleImageNotFoundException(ImageNotFoundException e) {
         logByType(e);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ErrorResponse.of(ErrorCode.IMAGE_NOT_FOUND, e.getMessage()));
+        return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<Void> handleProductNotFoundException(ProductNotFoundException e) {
+        logByType(e);
+        return ResponseEntity.noContent().build();
     }
 
     // Chat 도메인 예외들
