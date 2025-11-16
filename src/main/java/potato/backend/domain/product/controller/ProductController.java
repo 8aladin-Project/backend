@@ -2,7 +2,6 @@ package potato.backend.domain.product.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import potato.backend.domain.product.dto.ProductCreateRequest;
@@ -38,11 +41,14 @@ public class ProductController {
     /**
      * 상품 목록 조회 (페이징)
      */
-    @Operation(summary = "상품 목록 조회", description = "페이징된 상품 목록을 조회합니다.")
+    @Operation(
+            summary = "상품 목록 조회",
+            description = "페이징된 상품 목록을 조회합니다. page/size/sort 파라미터를 쿼리스트링으로 전달하세요. 예) ?page=0&size=20&sort=price,asc&sort=createdAt,desc"
+    )
     @GetMapping
     public ResponseEntity<Page<ProductListResponse>> getProductList(
-            @Parameter(description = "페이지 정보")
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @Parameter(description = "Pageable 쿼리 파라미터(page, size, sort=필드,방향)")
+            @PageableDefault(size = 20) @ParameterObject Pageable pageable
     ) {
         log.info("상품 목록 조회 요청 - page: {}, size: {}, sort: {}", 
                 pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
@@ -74,6 +80,17 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(
             @Parameter(description = "상품 생성 정보", required = true)
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "상품 생성 요청 예시",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = ProductCreateRequest.class),
+                            examples = @ExampleObject(
+                                    name = "상품 생성 예시",
+                                    value = "{\n  \"member_id\": 1,\n  \"title\": \"어쩌구\",\n  \"category\": [\"디지털\"],\n  \"content\": \"상세 설명\",\n  \"main_image_url\": \"https://api-dev-minio.8aladin.shop/paladin/images/main.png\",\n  \"images\": [\"https://api-dev-minio.8aladin.shop/paladin/images/detail.png\"],\n  \"price\": 3000,\n  \"status\": \"SELLING\"\n}"
+                            )
+                    )
+            )
             @RequestBody ProductCreateRequest request
     ) {
         log.info("상품 생성 요청");
@@ -91,6 +108,17 @@ public class ProductController {
             @Parameter(description = "상품 ID", required = true)
             @PathVariable Long productId,
             @Parameter(description = "상품 수정 정보", required = true)
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "상품 수정 요청 예시",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = ProductUpdateRequest.class),
+                            examples = @ExampleObject(
+                                    name = "상품 수정 예시",
+                                    value = "{\n  \"title\": \"어쩌구-수정\",\n  \"content\": \"수정된 상세 설명\",\n  \"main_image_url\": \"https://api-dev-minio.8aladin.shop/paladin/images/main.png\",\n  \"image_urls\": [\"https://api-dev-minio.8aladin.shop/paladin/images/detail.png\"],\n  \"price\": 3500,\n  \"status\": \"SELLING\"\n}"
+                            )
+                    )
+            )
             @RequestBody ProductUpdateRequest request
     ) {
         log.info("상품 수정 요청 - productId: {}", productId);
