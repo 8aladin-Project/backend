@@ -34,6 +34,9 @@ public class ProductCreateRequest {
     @Schema(description = "판매 상태", example = "SELLING")
     private final String status;
 
+    @Schema(description = "상품 상태", example = "USED")
+    private final String condition;
+
     public static ProductCreateRequest of (
             Long memberId,
             String title,
@@ -42,7 +45,8 @@ public class ProductCreateRequest {
             String mainImageUrl,
             List<String> images,
             Long price,
-            String status
+            String status,
+            String condition
     ) {
         return new ProductCreateRequest(
                 memberId,
@@ -52,7 +56,8 @@ public class ProductCreateRequest {
                 mainImageUrl,
                 images,
                 price,
-                status
+                status,
+                condition
         );
     }
 }
