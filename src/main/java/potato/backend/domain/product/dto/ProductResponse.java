@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 public class ProductResponse {
     private Long id;
+    private String nickname;
     private Long productId;
     private List<Category> categories;
     private String title;
@@ -26,6 +27,7 @@ public class ProductResponse {
     public static ProductResponse fromEntity(Product product) {
         ProductResponse response = new ProductResponse();
         response.id = product.getMember().getId();
+        response.nickname = product.getMember().getName();
         response.productId = product.getId();
         response.categories = product.getCategories();
         response.title = product.getTitle();
