@@ -63,6 +63,10 @@ public class Product extends BaseEntity {
     private Status status;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Condition condition;
+
+    @Column(nullable = false)
     @Builder.Default
     private Long viewCount = 0L;
 
