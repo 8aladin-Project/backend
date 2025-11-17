@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 @Getter
 public class ProductListResponse {
+    private Long id;
     private Long productId;
     private List<String> category;
     private String title;
@@ -23,6 +24,7 @@ public class ProductListResponse {
 
     public static ProductListResponse fromEntity(Product product) {
         ProductListResponse response = new ProductListResponse();
+        response.id = product.getMember().getId();
         response.productId = product.getId();
         response.title = product.getTitle();
         response.category = product.getCategories()

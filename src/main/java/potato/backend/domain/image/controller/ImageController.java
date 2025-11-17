@@ -32,7 +32,7 @@ public class ImageController {
     private final ImageService imageService;
     
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "이미지 업로드", description = "상품에 대한 이미지를 업로드합니다.")
+    @Operation(summary = "다중 이미지 업로드", description = "상품에 대한 이미지를 업로드합니다.")
     public ResponseEntity<List<ImageResponse>> uploadImages(
             @Parameter(description = "업로드할 이미지 파일들") @RequestParam("images") List<MultipartFile> images
     ) {

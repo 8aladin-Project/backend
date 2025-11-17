@@ -53,6 +53,7 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
+                                "/h2-console/**",
                                 "/v3/api-docs.yaml",
                                 "/h2-console/**",  // H2 콘솔 허용
                                 "/ws-chat/**",  // WebSocket 엔드포인트 허용

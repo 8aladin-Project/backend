@@ -10,6 +10,7 @@ import java.util.List;
 
 @Getter
 public class ProductResponse {
+    private Long id;
     private Long productId;
     private List<Category> categories;
     private String title;
@@ -24,6 +25,7 @@ public class ProductResponse {
 
     public static ProductResponse fromEntity(Product product) {
         ProductResponse response = new ProductResponse();
+        response.id = product.getMember().getId();
         response.productId = product.getId();
         response.categories = product.getCategories();
         response.title = product.getTitle();
@@ -33,8 +35,8 @@ public class ProductResponse {
         response.status = product.getStatus().name();
         response.likeCount = product.getLikeCount();
         response.viewCount = product.getViewCount();
-        response.createdAt = product.getCreatedAt().toString();
-        response.updatedAt = product.getUpdatedAt().toString();
+        response.createdAt = product.getCreatedAt() != null ? product.getCreatedAt().toString() : null;
+        response.updatedAt = product.getUpdatedAt() != null ? product.getUpdatedAt().toString() : null;
         return response;
     }
 }

@@ -91,6 +91,10 @@ public class Product extends BaseEntity {
         Objects.requireNonNull(mainImageUrl, "mainImageUrl");
         Objects.requireNonNull(imageUrls, "imageUrls");
 
+        if (categories.isEmpty()) {
+            throw new IllegalArgumentException("categories must not be empty");
+        }
+
         if (price.signum() < 0) {
             throw new IllegalArgumentException("price must be >= 0");
         }

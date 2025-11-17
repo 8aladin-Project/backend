@@ -23,6 +23,8 @@ import potato.backend.domain.product.repository.ProductRepository;
 import potato.backend.domain.user.domain.Member;
 import potato.backend.domain.user.exception.MemberNotFoundException;
 import potato.backend.domain.user.repository.MemberRepository;
+import potato.backend.global.exception.CustomException;
+import potato.backend.global.exception.ErrorCode;
 
 @Service
 @RequiredArgsConstructor
@@ -44,10 +46,49 @@ public class ProductService {
         log.info("상품 생성 시작 - title: {}, price: {}, status: {}", 
                 request.getTitle(), request.getPrice(), request.getStatus());
         
+        // 카테고리 필수 검증
+        if (request.getCategory() == null || request.getCategory().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_ARGUMENT, "상품 생성 시 카테고리는 최소 1개 이상이어야 합니다");
+        }
+        
         Member member = memberRepository.findById(request.getMemberId())
                  .orElseThrow(() -> new MemberNotFoundException(request.getMemberId()));
 
-        List<Category> categories = categoryRepository.findByNameIn(request.getCategory());
+        // 입력된 카테고리명 정규화: trim, 공백 제거, 중복 제거
+        List<String> requestedCategoryNames = request.getCategory().stream()
+                .filter(name -> name != null)
+                .map(String::trim)
+                .filter(name -> !name.isEmpty())
+                .distinct()
+                .toList();
+
+        if (requestedCategoryNames.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_ARGUMENT, "유효한 카테고리명이 최소 1개 이상이어야 합니다");
+        }
+
+        // 1) 이미 존재하는 카테고리 조회
+        List<Category> existingCategories = categoryRepository.findByNameIn(requestedCategoryNames);
+
+        // 2) 없는 이름은 새로 생성
+        java.util.Set<String> existingNames = existingCategories.stream()
+                .map(Category::getCategoryName)
+                .collect(java.util.stream.Collectors.toSet());
+
+        List<String> missingNames = requestedCategoryNames.stream()
+                .filter(name -> !existingNames.contains(name))
+                .toList();
+
+        List<Category> newCategories = missingNames.stream()
+                .map(potato.backend.domain.category.domain.Category::create)
+                .toList();
+
+        if (!newCategories.isEmpty()) {
+            newCategories = categoryRepository.saveAll(newCategories);
+        }
+
+        // 3) 최종 카테고리 목록 결합
+        List<Category> categories = new java.util.ArrayList<>(existingCategories);
+        categories.addAll(newCategories);
 
         // Product.create()가 이미지 URL 문자열을 받아서 내부에서 Image 엔티티 생성
         Product product = Product.create(
