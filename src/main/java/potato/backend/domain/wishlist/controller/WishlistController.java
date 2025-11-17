@@ -12,6 +12,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import potato.backend.domain.wishlist.service.WishlistService;
 import potato.backend.domain.wishlist.dto.WishlistResponse;
+import potato.backend.domain.wishlist.dto.WishlistListResponse;
+
+import java.util.List;
 
 @RestController
 @Validated
@@ -63,6 +66,21 @@ public class WishlistController {
         wishlistService.removeFromWishlist(memberId, productId);
         
         return ResponseEntity.noContent().build();
+    }
+
+    // 위시리스트 목록 조회
+    @Operation(summary = "위시리스트 목록 조회", description = "특정 회원의 위시리스트 목록을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음")
+    })
+    @GetMapping("/members/{memberId}")
+    public ResponseEntity<List<WishlistListResponse>> getWishlistList(
+            @Parameter(description = "회원 ID", required = true)
+            @PathVariable Long memberId) {
+        
+        List<WishlistListResponse> wishlistList = wishlistService.getWishlistList(memberId);
+        return ResponseEntity.ok(wishlistList);
     }
 
     // 위시리스트 확인
