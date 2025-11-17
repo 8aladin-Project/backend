@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.stereotype.Service;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -30,4 +31,7 @@ public class ProductUpdateRequest {
 
     @Schema(description = "판매 상태", example = "RESERVED")
     private final String status;
+
+    @Schema(description = "상품 상태", example = "USED")
+    private final String condition;
 }
