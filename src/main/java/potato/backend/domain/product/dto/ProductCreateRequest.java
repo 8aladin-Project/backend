@@ -34,8 +34,8 @@ public class ProductCreateRequest {
     @Schema(description = "판매 상태", example = "SELLING")
     private final String status;
 
-    @Schema(description = "상품 상태", example = "USED")
-    private final String condition;
+@Schema(description = "상품 상태", example = "USED")
+private final Condition condition;
 
     public static ProductCreateRequest of (
             Long memberId,
