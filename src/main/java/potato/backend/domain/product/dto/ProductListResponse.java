@@ -14,6 +14,7 @@ public class ProductListResponse {
     private String nickname;
     private Long productId;
     private List<String> category;
+    private String condition;
     private String title;
     private Long price;
     private String mainImageUrl;
@@ -33,6 +34,7 @@ public class ProductListResponse {
                 .stream()
                 .map(Category::getCategoryName)
                 .collect(Collectors.toList());
+        response.condition = product.getCondition().name();
         response.price = product.getPrice().longValue();
         response.mainImageUrl = product.getMainImageUrl();
         response.status = product.getStatus().name();
