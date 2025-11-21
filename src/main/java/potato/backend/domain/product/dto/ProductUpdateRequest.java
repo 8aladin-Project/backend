@@ -7,7 +7,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.stereotype.Service;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
