@@ -8,12 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import potato.backend.domain.wishlist.domain.Wishlist;
 import potato.backend.domain.wishlist.repository.WishlistRepository;
+import potato.backend.domain.wishlist.dto.WishlistListResponse;
 import potato.backend.domain.user.domain.Member;
 import potato.backend.domain.user.repository.MemberRepository;
 import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.product.repository.ProductRepository;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +67,19 @@ public class WishlistService {
     @Transactional(readOnly = true)
     public boolean isInWishlist(Long memberId, Long productId) {
         return wishlistRepository.findByMemberIdAndProductId(memberId, productId).isPresent();
+    }
+
+    /**
+     * 회원의 위시리스트 목록 조회
+     * @param memberId 회원 ID
+     * @return 위시리스트 목록 (최신순)
+     */
+    public List<WishlistListResponse> getWishlistList(Long memberId) {
+        getMember(memberId); // 회원 존재 여부 확인
+        List<Wishlist> wishlists = wishlistRepository.findByMemberIdWithDetails(memberId);
+        return wishlists.stream()
+                .map(WishlistListResponse::fromEntity)
+                .collect(Collectors.toList());
     }
 
     // 회원의 위시리스트 개수 조회

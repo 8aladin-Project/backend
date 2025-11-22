@@ -30,8 +30,26 @@ public class FcmConfig {
                     return;
                 }
 
+                // 환경 변수에서 가져온 값의 앞뒤 따옴표 제거
+                String jsonValue = serviceAccountJson.trim();
+                
+                // 앞뒤 따옴표 제거 (양쪽 모두 또는 한쪽만 있을 수 있음)
+                if (jsonValue.length() >= 2 && jsonValue.startsWith("\"") && jsonValue.endsWith("\"")) {
+                    jsonValue = jsonValue.substring(1, jsonValue.length() - 1);
+                } else if (jsonValue.length() >= 2 && jsonValue.startsWith("'") && jsonValue.endsWith("'")) {
+                    jsonValue = jsonValue.substring(1, jsonValue.length() - 1);
+                } else if (jsonValue.startsWith("\"")) {
+                    jsonValue = jsonValue.substring(1);
+                } else if (jsonValue.startsWith("'")) {
+                    jsonValue = jsonValue.substring(1);
+                } else if (jsonValue.endsWith("\"")) {
+                    jsonValue = jsonValue.substring(0, jsonValue.length() - 1);
+                } else if (jsonValue.endsWith("'")) {
+                    jsonValue = jsonValue.substring(0, jsonValue.length() - 1);
+                }
+
                 ByteArrayInputStream stream = new ByteArrayInputStream(
-                    serviceAccountJson.getBytes(StandardCharsets.UTF_8)
+                    jsonValue.getBytes(StandardCharsets.UTF_8)
                 );
                 
                 FirebaseOptions options = FirebaseOptions.builder()
