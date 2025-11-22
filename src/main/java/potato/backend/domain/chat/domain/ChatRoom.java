@@ -6,6 +6,7 @@ import potato.backend.domain.common.domain.BaseEntity;
 import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.user.domain.Member;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +39,13 @@ public class ChatRoom extends BaseEntity {
     @Builder.Default
     private List<ChatMessage> messages = new ArrayList<>();
 
+    @Column(nullable = false, name = "is_completed")
+    @Builder.Default
+    private Boolean completed = false; // 거래 완료 여부
+
+    @Column(name = "completed_at")
+    private Instant completedAt; // 거래 완료 시각
+
 
     // ChatRoom 생성자
     public static ChatRoom create(Member seller, Member buyer, Product product) {
@@ -65,6 +73,15 @@ public class ChatRoom extends BaseEntity {
     // 채팅방 참여자 확인 메서드
     public boolean isParticipant(Member member) {
         return member != null && (member.equals(seller) || member.equals(buyer));
+    }
+
+    // 거래 완료 처리 메서드
+    public void completeTransaction() {
+        if (this.completed) {
+            throw new IllegalStateException("이미 거래가 완료된 채팅방입니다");
+        }
+        this.completed = true;
+        this.completedAt = Instant.now();
     }
 
 }
