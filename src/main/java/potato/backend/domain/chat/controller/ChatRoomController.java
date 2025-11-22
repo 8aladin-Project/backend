@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,16 +24,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import potato.backend.domain.chat.dto.chatMessage.ChatRoomCreateRequest;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomDetailResponse;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomListResponse;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomResponse;
 import potato.backend.domain.chat.service.ChatRoomService;
 import potato.backend.global.exception.ErrorResponse;
+import potato.backend.global.util.MemberUtil;
 
 /**
  * 채팅방 컨트롤러
  */
+@Slf4j
 @RestController 
 @Validated
 @RequiredArgsConstructor
@@ -42,6 +46,7 @@ import potato.backend.global.exception.ErrorResponse;
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
+    private final MemberUtil memberUtil;
 
     /**
      * 채팅방 생성 메서드
@@ -166,5 +171,104 @@ public class ChatRoomController {
             @Parameter(description = "회원 ID, 참여 중인 채팅방만 반환합니다.", required = true)
             @RequestParam(name = "memberId") Long memberId) {
         return chatRoomService.getChatRoomList(memberId);
+    }
+
+    /**
+     * 거래 완료 처리 API
+     * 판매자가 특정 채팅방을 거래 완료로 표시하고, 상품 상태를 SOLD_OUT으로 변경합니다.
+     * @param chatRoomId 채팅방 ID
+     * @return 성공 응답
+     */
+    @Operation(summary = "거래 완료 처리 API", description = "판매자가 특정 채팅방을 거래 완료로 표시합니다. 상품 상태가 SOLD_OUT으로 변경되고, 해당 채팅방의 buyer가 실제 구매자로 저장됩니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "거래 완료 처리 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (이미 거래 완료된 채팅방 또는 상품)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음 (판매자만 가능)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "채팅방을 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
+    @PutMapping("/{chatRoomId}/complete")
+    public ResponseEntity<Void> completeTransaction(
+            @Parameter(description = "채팅방 ID", required = true)
+            @PathVariable Long chatRoomId) {
+        
+        Long authenticatedMemberId = memberUtil.getCurrentUser().memberId();
+        chatRoomService.completeTransaction(chatRoomId, authenticatedMemberId);
+        
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 테스트용 - 거래 완료 처리 API (sellerId 파라미터로 받기)
+     * 개발 환경에서만 사용하세요.
+     * @param chatRoomId 채팅방 ID
+     * @param sellerId 판매자 ID (요청자 검증용)
+     * @return 성공 응답
+     */
+    @Operation(summary = "거래 완료 처리 API (테스트용)", description = "sellerId를 파라미터로 받아 거래 완료를 처리합니다. 개발/테스트 전용입니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "거래 완료 처리 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (이미 거래 완료된 채팅방 또는 상품)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음 (판매자만 가능)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "채팅방을 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
+    @PutMapping("/{chatRoomId}/complete/test")
+    public ResponseEntity<Void> completeTransactionForTest(
+            @Parameter(description = "채팅방 ID", required = true)
+            @PathVariable Long chatRoomId,
+            @Parameter(description = "판매자 ID", required = true)
+            @RequestParam(name = "sellerId") Long sellerId) {
+        
+        log.info("거래 완료 처리 요청 (테스트용): chatRoomId={}, sellerId={}", chatRoomId, sellerId);
+        chatRoomService.completeTransaction(chatRoomId, sellerId);
+        
+        return ResponseEntity.ok().build();
     }
 }
