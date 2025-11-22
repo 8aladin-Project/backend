@@ -76,7 +76,7 @@ public class WishlistService {
      */
     public List<WishlistListResponse> getWishlistList(Long memberId) {
         getMember(memberId); // 회원 존재 여부 확인
-        List<Wishlist> wishlists = wishlistRepository.findByMemberIdOrderByCreatedAtDesc(memberId);
+        List<Wishlist> wishlists = wishlistRepository.findByMemberIdWithDetails(memberId);
         return wishlists.stream()
                 .map(WishlistListResponse::fromEntity)
                 .collect(Collectors.toList());
