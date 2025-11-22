@@ -84,7 +84,8 @@ public class Product extends BaseEntity {
             List<String> imageUrls,
             BigDecimal price,
             Status status,
-            String mainImageUrl
+            String mainImageUrl,
+            Condition condition
     ) {
         Objects.requireNonNull(member, "member");
         Objects.requireNonNull(categories, "categories");
@@ -94,6 +95,7 @@ public class Product extends BaseEntity {
         Objects.requireNonNull(status, "status");
         Objects.requireNonNull(mainImageUrl, "mainImageUrl");
         Objects.requireNonNull(imageUrls, "imageUrls");
+        Objects.requireNonNull(condition, "condition");
 
         if (categories.isEmpty()) {
             throw new IllegalArgumentException("categories must not be empty");
@@ -118,6 +120,7 @@ public class Product extends BaseEntity {
                 .mainImageUrl(mainImageUrl)
                 .price(normalized)
                 .status(status)
+                .condition(condition)
                 .build();
 
         // 이미지 URL 문자열로부터 Image 엔티티 생성 및 추가

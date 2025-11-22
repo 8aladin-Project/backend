@@ -14,6 +14,7 @@ import potato.backend.domain.category.domain.Category;
 import potato.backend.domain.category.repository.CategoryRepository;
 import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.product.domain.Status;
+import potato.backend.domain.product.domain.Condition;
 import potato.backend.domain.product.dto.ProductCreateRequest;
 import potato.backend.domain.product.dto.ProductListResponse;
 import potato.backend.domain.product.dto.ProductResponse;
@@ -99,7 +100,8 @@ public class ProductService {
                 request.getImages(),
                 BigDecimal.valueOf(request.getPrice()),
                 Status.valueOf(request.getStatus()),
-                request.getMainImageUrl()
+                request.getMainImageUrl(),
+                Condition.valueOf(request.getCondition())
         );
 
         Product savedProduct = productRepository.save(product);

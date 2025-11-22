@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import potato.backend.domain.product.domain.Condition;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -34,8 +35,8 @@ public class ProductCreateRequest {
     @Schema(description = "판매 상태", example = "SELLING")
     private final String status;
 
-@Schema(description = "상품 상태", example = "USED")
-private final Condition condition;
+    @Schema(description = "상품 상태", example = "USED")
+    private final String condition;
 
     public static ProductCreateRequest of (
             Long memberId,
