@@ -12,6 +12,7 @@ import potato.backend.domain.image.domain.Image;
 import potato.backend.domain.image.repository.ImageRepository;
 import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.product.domain.Status;
+import potato.backend.domain.product.domain.Condition;
 import potato.backend.domain.product.repository.ProductRepository;
 import potato.backend.domain.user.domain.Member;
 import potato.backend.domain.user.repository.MemberRepository;
@@ -71,8 +72,8 @@ class ImageRepositoryTest {
                 List.of(testImagePath1, testImagePath2),
                 BigDecimal.valueOf(100000),
                 Status.SELLING,
-                testImagePath1
-        );
+                testImagePath1,
+                Condition.NEW);
         productRepository.save(testProduct);
     }
 
@@ -154,8 +155,7 @@ class ImageRepositoryTest {
         List<Image> images = List.of(
                 Image.create(bulkImage1),
                 Image.create(bulkImage2),
-                Image.create(bulkImage3)
-        );
+                Image.create(bulkImage3));
 
         // when
         List<Image> savedImages = imageRepository.saveAll(images);

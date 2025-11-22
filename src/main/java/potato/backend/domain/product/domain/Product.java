@@ -155,7 +155,8 @@ public class Product extends BaseEntity {
     }
 
     // == 비즈니스 메서드 ==
-    public void update(String title, String content, BigDecimal price, Status status, String mainImageUrl) {
+    public void update(String title, String content, BigDecimal price, Status status, String mainImageUrl,
+                       List<Category> categories, List<String> imageUrls) {
         if (title != null) {
             this.title = title;
         }
@@ -173,6 +174,21 @@ public class Product extends BaseEntity {
         }
         if (mainImageUrl != null) {
             this.mainImageUrl = mainImageUrl;
+        }
+        if (categories != null) {
+            this.categories.clear();
+            this.categories.addAll(categories);
+        }
+        if (imageUrls != null) {
+            this.images.clear();
+            List<Image> newImages = imageUrls.stream()
+                    .map(url -> {
+                        Image image = Image.create(url);
+                        image.setProduct(this);
+                        return image;
+                    })
+                    .toList();
+            this.images.addAll(newImages);
         }
     }
 
