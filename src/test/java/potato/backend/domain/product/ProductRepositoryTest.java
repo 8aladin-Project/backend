@@ -13,6 +13,7 @@ import potato.backend.domain.category.repository.CategoryRepository;
 import potato.backend.domain.image.domain.Image;
 import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.product.domain.Status;
+import potato.backend.domain.product.domain.Condition;
 import potato.backend.domain.product.repository.ProductRepository;
 import potato.backend.domain.user.domain.Member;
 import potato.backend.domain.user.repository.MemberRepository;
@@ -64,8 +65,8 @@ class ProductRepositoryTest {
                 imageUrls,
                 BigDecimal.valueOf(1500000),
                 Status.SELLING,
-                "main-image.jpg"
-        );
+                "main-image.jpg",
+                Condition.NEW);
 
         // when
         Product savedProduct = productRepository.save(product);
@@ -91,8 +92,8 @@ class ProductRepositoryTest {
                 List.of("image1.jpg"),
                 BigDecimal.valueOf(2500000),
                 Status.SELLING,
-                "macbook.jpg"
-        );
+                "macbook.jpg",
+                Condition.NEW);
         Product savedProduct = productRepository.save(product);
 
         // when
@@ -116,8 +117,8 @@ class ProductRepositoryTest {
                     List.of("image" + i + ".jpg"),
                     BigDecimal.valueOf(10000 * i),
                     Status.SELLING,
-                    "main" + i + ".jpg"
-            );
+                    "main" + i + ".jpg",
+                    Condition.NEW);
             productRepository.save(product);
         }
 
@@ -143,12 +144,13 @@ class ProductRepositoryTest {
                 List.of("image1.jpg"),
                 BigDecimal.valueOf(100000),
                 Status.SELLING,
-                "original.jpg"
-        );
+                "original.jpg",
+                Condition.NEW);
         Product savedProduct = productRepository.save(product);
 
         // when
-        savedProduct.update("수정된 제목", "수정된 내용", BigDecimal.valueOf(150000), Status.SOLD_OUT, "updated.jpg");
+        savedProduct.update("수정된 제목", "수정된 내용", BigDecimal.valueOf(150000), Status.SOLD_OUT, "updated.jpg",
+                List.of(testCategory), null);
         productRepository.save(savedProduct);
 
         // then
@@ -172,8 +174,8 @@ class ProductRepositoryTest {
                 List.of("image1.jpg"),
                 BigDecimal.valueOf(50000),
                 Status.SELLING,
-                "delete.jpg"
-        );
+                "delete.jpg",
+                Condition.NEW);
         Product savedProduct = productRepository.save(product);
         Long productId = savedProduct.getId();
 
@@ -197,8 +199,8 @@ class ProductRepositoryTest {
                 List.of("image1.jpg"),
                 BigDecimal.valueOf(30000),
                 Status.SELLING,
-                "exists.jpg"
-        );
+                "exists.jpg",
+                Condition.NEW);
         Product savedProduct = productRepository.save(product);
 
         // when & then
@@ -219,8 +221,8 @@ class ProductRepositoryTest {
                     List.of("image" + i + ".jpg"),
                     BigDecimal.valueOf(10000 * i),
                     Status.SELLING,
-                    "main" + i + ".jpg"
-            );
+                    "main" + i + ".jpg",
+                    Condition.NEW);
             productRepository.save(product);
         }
 
@@ -244,8 +246,8 @@ class ProductRepositoryTest {
                         List.of("image1.jpg"),
                         BigDecimal.valueOf(10000),
                         Status.SELLING,
-                        "main1.jpg"
-                ),
+                        "main1.jpg",
+                        Condition.NEW),
                 Product.create(
                         testMember,
                         List.of(testCategory),
@@ -254,8 +256,8 @@ class ProductRepositoryTest {
                         List.of("image2.jpg"),
                         BigDecimal.valueOf(20000),
                         Status.SELLING,
-                        "main2.jpg"
-                ),
+                        "main2.jpg",
+                        Condition.NEW),
                 Product.create(
                         testMember,
                         List.of(testCategory),
@@ -264,9 +266,8 @@ class ProductRepositoryTest {
                         List.of("image3.jpg"),
                         BigDecimal.valueOf(30000),
                         Status.SELLING,
-                        "main3.jpg"
-                )
-        );
+                        "main3.jpg",
+                        Condition.NEW));
 
         // when
         List<Product> savedProducts = productRepository.saveAll(products);
@@ -280,9 +281,12 @@ class ProductRepositoryTest {
     @DisplayName("제목으로 상품 검색 테스트")
     void searchByTitle() {
         // given
-        Product product1 = Product.create(testMember, List.of(testCategory), "아이폰 15", "설명1", List.of("image1.jpg"), BigDecimal.valueOf(1000000), Status.SELLING, "main1.jpg");
-        Product product2 = Product.create(testMember, List.of(testCategory), "아이폰 14", "설명2", List.of("image2.jpg"), BigDecimal.valueOf(900000), Status.SELLING, "main2.jpg");
-        Product product3 = Product.create(testMember, List.of(testCategory), "갤럭시 S24", "설명3", List.of("image3.jpg"), BigDecimal.valueOf(1100000), Status.SELLING, "main3.jpg");
+        Product product1 = Product.create(testMember, List.of(testCategory), "아이폰 15", "설명1", List.of("image1.jpg"),
+                BigDecimal.valueOf(1000000), Status.SELLING, "main1.jpg", Condition.NEW);
+        Product product2 = Product.create(testMember, List.of(testCategory), "아이폰 14", "설명2", List.of("image2.jpg"),
+                BigDecimal.valueOf(900000), Status.SELLING, "main2.jpg", Condition.NEW);
+        Product product3 = Product.create(testMember, List.of(testCategory), "갤럭시 S24", "설명3", List.of("image3.jpg"),
+                BigDecimal.valueOf(1100000), Status.SELLING, "main3.jpg", Condition.NEW);
 
         productRepository.saveAll(List.of(product1, product2, product3));
 
@@ -300,9 +304,12 @@ class ProductRepositoryTest {
     @DisplayName("상태별 상품 조회 테스트")
     void findByStatus() {
         // given
-        Product product1 = Product.create(testMember, List.of(testCategory), "판매중 상품1", "설명1", List.of("image1.jpg"), BigDecimal.valueOf(10000), Status.SELLING, "main1.jpg");
-        Product product2 = Product.create(testMember, List.of(testCategory), "판매중 상품2", "설명2", List.of("image2.jpg"), BigDecimal.valueOf(20000), Status.SELLING, "main2.jpg");
-        Product product3 = Product.create(testMember, List.of(testCategory), "품절 상품", "설명3", List.of("image3.jpg"), BigDecimal.valueOf(30000), Status.SOLD_OUT, "main3.jpg");
+        Product product1 = Product.create(testMember, List.of(testCategory), "판매중 상품1", "설명1", List.of("image1.jpg"),
+                BigDecimal.valueOf(10000), Status.SELLING, "main1.jpg", Condition.NEW);
+        Product product2 = Product.create(testMember, List.of(testCategory), "판매중 상품2", "설명2", List.of("image2.jpg"),
+                BigDecimal.valueOf(20000), Status.SELLING, "main2.jpg", Condition.NEW);
+        Product product3 = Product.create(testMember, List.of(testCategory), "품절 상품", "설명3", List.of("image3.jpg"),
+                BigDecimal.valueOf(30000), Status.SOLD_OUT, "main3.jpg", Condition.NEW);
 
         productRepository.saveAll(List.of(product1, product2, product3));
 
@@ -329,8 +336,8 @@ class ProductRepositoryTest {
                     List.of("image" + i + ".jpg"),
                     BigDecimal.valueOf(10000 * i),
                     Status.SELLING,
-                    "main" + i + ".jpg"
-            );
+                    "main" + i + ".jpg",
+                    Condition.NEW);
             productRepository.save(product);
         }
 
@@ -339,15 +346,13 @@ class ProductRepositoryTest {
         Page<Product> priceRangeProducts = productRepository.findByPriceRange(
                 BigDecimal.valueOf(20000),
                 BigDecimal.valueOf(40000),
-                pageable
-        );
+                pageable);
 
         // then
         assertThat(priceRangeProducts.getContent()).hasSize(3);
         assertThat(priceRangeProducts.getContent()).allMatch(
                 p -> p.getPrice().compareTo(BigDecimal.valueOf(20000)) >= 0
-                        && p.getPrice().compareTo(BigDecimal.valueOf(40000)) <= 0
-        );
+                        && p.getPrice().compareTo(BigDecimal.valueOf(40000)) <= 0);
     }
 
     @Test
@@ -357,9 +362,12 @@ class ProductRepositoryTest {
         Member anotherMember = Member.create("다른유저", "another@example.com", "hashedPassword", "010-9876-5432");
         memberRepository.save(anotherMember);
 
-        Product product1 = Product.create(testMember, List.of(testCategory), "테스트유저 상품1", "설명1", List.of("image1.jpg"), BigDecimal.valueOf(10000), Status.SELLING, "main1.jpg");
-        Product product2 = Product.create(testMember, List.of(testCategory), "테스트유저 상품2", "설명2", List.of("image2.jpg"), BigDecimal.valueOf(20000), Status.SELLING, "main2.jpg");
-        Product product3 = Product.create(anotherMember, List.of(testCategory), "다른유저 상품", "설명3", List.of("image3.jpg"), BigDecimal.valueOf(30000), Status.SELLING, "main3.jpg");
+        Product product1 = Product.create(testMember, List.of(testCategory), "테스트유저 상품1", "설명1", List.of("image1.jpg"),
+                BigDecimal.valueOf(10000), Status.SELLING, "main1.jpg", Condition.NEW);
+        Product product2 = Product.create(testMember, List.of(testCategory), "테스트유저 상품2", "설명2", List.of("image2.jpg"),
+                BigDecimal.valueOf(20000), Status.SELLING, "main2.jpg", Condition.NEW);
+        Product product3 = Product.create(anotherMember, List.of(testCategory), "다른유저 상품", "설명3", List.of("image3.jpg"),
+                BigDecimal.valueOf(30000), Status.SELLING, "main3.jpg", Condition.NEW);
 
         productRepository.saveAll(List.of(product1, product2, product3));
 
@@ -370,8 +378,7 @@ class ProductRepositoryTest {
         // then
         assertThat(testMemberProducts.getContent()).hasSize(2);
         assertThat(testMemberProducts.getContent()).allMatch(
-                p -> p.getMember().getId().equals(testMember.getId())
-        );
+                p -> p.getMember().getId().equals(testMember.getId()));
     }
 
     @Test
@@ -390,8 +397,8 @@ class ProductRepositoryTest {
                 List.of("image1.jpg"),
                 BigDecimal.valueOf(1500000),
                 Status.SELLING,
-                "main.jpg"
-        );
+                "main.jpg",
+                Condition.NEW);
 
         // when
         Product savedProduct = productRepository.save(product);
@@ -414,8 +421,8 @@ class ProductRepositoryTest {
                 List.of("image1.jpg", "image2.jpg", "image3.jpg"),
                 BigDecimal.valueOf(100000),
                 Status.SELLING,
-                "main.jpg"
-        );
+                "main.jpg",
+                Condition.NEW);
 
         // when
         Product savedProduct = productRepository.save(product);

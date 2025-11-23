@@ -4,6 +4,7 @@ import lombok.Getter;
 import potato.backend.domain.category.domain.Category;
 import potato.backend.domain.image.domain.Image;
 import potato.backend.domain.image.dto.ImageResponse;
+import potato.backend.domain.product.domain.Condition;
 import potato.backend.domain.product.domain.Product;
 
 import java.util.List;
@@ -11,10 +12,11 @@ import java.util.List;
 @Getter
 public class ProductResponse {
     private Long id;
+    private String nickname;
     private Long productId;
     private List<Category> categories;
     private String title;
-    private String content;
+    private Condition content;
     private Long price;
     private List<ImageResponse> images;
     private String status;
@@ -26,10 +28,11 @@ public class ProductResponse {
     public static ProductResponse fromEntity(Product product) {
         ProductResponse response = new ProductResponse();
         response.id = product.getMember().getId();
+        response.nickname = product.getMember().getName();
         response.productId = product.getId();
         response.categories = product.getCategories();
         response.title = product.getTitle();
-        response.content = product.getContent();
+        response.content = product.getCondition();
         response.price = product.getPrice().longValue();
         response.images = ImageResponse.fromList(product.getImages());
         response.status = product.getStatus().name();
