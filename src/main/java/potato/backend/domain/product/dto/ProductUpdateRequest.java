@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder(access = AccessLevel.PRIVATE)
+@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductUpdateRequest {
 
@@ -30,4 +30,10 @@ public class ProductUpdateRequest {
 
     @Schema(description = "판매 상태", example = "RESERVED")
     private final String status;
+
+    @Schema(description = "상품 상태", example = "USED")
+    private final String condition;
+
+    @Schema(description = "카테고리 목록", example = "[\"디지털\", \"가전\"]")
+    private final List<String> category;
 }

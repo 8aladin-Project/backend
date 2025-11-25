@@ -14,6 +14,7 @@ import potato.backend.domain.category.domain.Category;
 import potato.backend.domain.category.repository.CategoryRepository;
 import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.product.domain.Status;
+import potato.backend.domain.product.domain.Condition;
 import potato.backend.domain.product.dto.ProductCreateRequest;
 import potato.backend.domain.product.dto.ProductListResponse;
 import potato.backend.domain.product.dto.ProductResponse;
@@ -99,7 +100,8 @@ public class ProductService {
                 request.getImages(),
                 BigDecimal.valueOf(request.getPrice()),
                 Status.valueOf(request.getStatus()),
-                request.getMainImageUrl()
+                request.getMainImageUrl(),
+                Condition.valueOf(request.getCondition())
         );
 
         Product savedProduct = productRepository.save(product);
@@ -138,10 +140,50 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
+        // 카테고리 처리
+        List<Category> categories = null;
+        if (request.getCategory() != null) {
+            // 입력된 카테고리명 정규화
+            List<String> requestedCategoryNames = request.getCategory().stream()
+                    .filter(name -> name != null)
+                    .map(String::trim)
+                    .filter(name -> !name.isEmpty())
+                    .distinct()
+                    .toList();
+
+            if (!requestedCategoryNames.isEmpty()) {
+                // 1) 이미 존재하는 카테고리 조회
+                List<Category> existingCategories = categoryRepository.findByNameIn(requestedCategoryNames);
+
+                // 2) 없는 이름은 새로 생성
+                java.util.Set<String> existingNames = existingCategories.stream()
+                        .map(Category::getCategoryName)
+                        .collect(java.util.stream.Collectors.toSet());
+
+                List<String> missingNames = requestedCategoryNames.stream()
+                        .filter(name -> !existingNames.contains(name))
+                        .toList();
+
+                List<Category> newCategories = missingNames.stream()
+                        .map(potato.backend.domain.category.domain.Category::create)
+                        .toList();
+
+                if (!newCategories.isEmpty()) {
+                    newCategories = categoryRepository.saveAll(newCategories);
+                }
+
+                // 3) 최종 카테고리 목록 결합
+                categories = new java.util.ArrayList<>(existingCategories);
+                categories.addAll(newCategories);
+            }
+        }
+
         product.update(request.getTitle(), request.getContent(),
-                BigDecimal.valueOf(request.getPrice()),
-                Status.valueOf(request.getStatus()),
-                request.getMainImageUrl());
+                request.getPrice() != null ? BigDecimal.valueOf(request.getPrice()) : null,
+                request.getStatus() != null ? Status.valueOf(request.getStatus()) : null,
+                request.getMainImageUrl(),
+                categories,
+                request.getImageUrls());
 
         log.info("상품 수정 완료 - productId: {}", productId);
         return ProductResponse.fromEntity(product);

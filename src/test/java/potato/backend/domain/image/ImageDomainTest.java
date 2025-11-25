@@ -12,6 +12,7 @@ import potato.backend.domain.category.domain.Category;
 import potato.backend.domain.image.domain.Image;
 import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.product.domain.Status;
+import potato.backend.domain.product.domain.Condition;
 import potato.backend.domain.storage.service.S3Service;
 import potato.backend.domain.user.domain.Member;
 
@@ -81,8 +82,7 @@ class ImageDomainTest {
                 "images/test-image-3.png",
                 "images/test-image-4.png",
                 "images/test-image-5.png",
-                "images/test-image-6.png"
-        );
+                "images/test-image-6.png");
 
         // when & then
         testImages.forEach(imageUrl -> {
@@ -180,11 +180,9 @@ class ImageDomainTest {
             s3Service.deleteFiles(uploadedUrls);
 
             // 모두 삭제되었는지 확인
-            uploadedUrls.forEach(url ->
-                    assertThat(s3Service.fileExists(url))
-                            .as("삭제된 이미지가 S3에 존재하지 않아야 합니다: %s", url)
-                            .isFalse()
-            );
+            uploadedUrls.forEach(url -> assertThat(s3Service.fileExists(url))
+                    .as("삭제된 이미지가 S3에 존재하지 않아야 합니다: %s", url)
+                    .isFalse());
 
             System.out.println("✅ 모든 파일 삭제 및 검증 완료");
         }
@@ -202,8 +200,7 @@ class ImageDomainTest {
             List<MultipartFile> imageFiles = List.of(
                     createMockMultipartFile("test-image-2.png"),
                     createMockMultipartFile("test-image-3.png"),
-                    createMockMultipartFile("test-image-4.png")
-            );
+                    createMockMultipartFile("test-image-4.png"));
 
             List<String> uploadedUrls = s3Service.uploadFiles(imageFiles);
 
@@ -221,8 +218,8 @@ class ImageDomainTest {
                     uploadedUrls,
                     BigDecimal.valueOf(100000),
                     Status.SELLING,
-                    uploadedUrls.get(0)
-            );
+                    uploadedUrls.get(0),
+                    Condition.NEW);
 
             // then - Product의 이미지가 올바르게 설정되었는지 확인
             assertThat(product.getImages()).hasSize(3);
@@ -264,8 +261,7 @@ class ImageDomainTest {
                     "file",
                     filename,
                     "image/png",
-                    content
-            );
+                    content);
         }
     }
 }

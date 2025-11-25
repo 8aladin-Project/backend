@@ -63,6 +63,10 @@ public class Product extends BaseEntity {
     private Status status;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Condition condition;
+
+    @Column(nullable = false)
     @Builder.Default
     private Long viewCount = 0L;
 
@@ -80,7 +84,8 @@ public class Product extends BaseEntity {
             List<String> imageUrls,
             BigDecimal price,
             Status status,
-            String mainImageUrl
+            String mainImageUrl,
+            Condition condition
     ) {
         Objects.requireNonNull(member, "member");
         Objects.requireNonNull(categories, "categories");
@@ -90,6 +95,7 @@ public class Product extends BaseEntity {
         Objects.requireNonNull(status, "status");
         Objects.requireNonNull(mainImageUrl, "mainImageUrl");
         Objects.requireNonNull(imageUrls, "imageUrls");
+        Objects.requireNonNull(condition, "condition");
 
         if (categories.isEmpty()) {
             throw new IllegalArgumentException("categories must not be empty");
@@ -114,6 +120,7 @@ public class Product extends BaseEntity {
                 .mainImageUrl(mainImageUrl)
                 .price(normalized)
                 .status(status)
+                .condition(condition)
                 .build();
 
         // 이미지 URL 문자열로부터 Image 엔티티 생성 및 추가
@@ -148,7 +155,8 @@ public class Product extends BaseEntity {
     }
 
     // == 비즈니스 메서드 ==
-    public void update(String title, String content, BigDecimal price, Status status, String mainImageUrl) {
+    public void update(String title, String content, BigDecimal price, Status status, String mainImageUrl,
+                       List<Category> categories, List<String> imageUrls) {
         if (title != null) {
             this.title = title;
         }
@@ -166,6 +174,21 @@ public class Product extends BaseEntity {
         }
         if (mainImageUrl != null) {
             this.mainImageUrl = mainImageUrl;
+        }
+        if (categories != null) {
+            this.categories.clear();
+            this.categories.addAll(categories);
+        }
+        if (imageUrls != null) {
+            this.images.clear();
+            List<Image> newImages = imageUrls.stream()
+                    .map(url -> {
+                        Image image = Image.create(url);
+                        image.setProduct(this);
+                        return image;
+                    })
+                    .toList();
+            this.images.addAll(newImages);
         }
     }
 

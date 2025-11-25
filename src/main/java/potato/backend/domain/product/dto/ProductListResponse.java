@@ -11,8 +11,10 @@ import java.util.stream.Collectors;
 @Getter
 public class ProductListResponse {
     private Long id;
+    private String nickname;
     private Long productId;
     private List<String> category;
+    private String condition;
     private String title;
     private Long price;
     private String mainImageUrl;
@@ -25,12 +27,14 @@ public class ProductListResponse {
     public static ProductListResponse fromEntity(Product product) {
         ProductListResponse response = new ProductListResponse();
         response.id = product.getMember().getId();
+        response.nickname = product.getMember().getName();
         response.productId = product.getId();
         response.title = product.getTitle();
         response.category = product.getCategories()
                 .stream()
                 .map(Category::getCategoryName)
                 .collect(Collectors.toList());
+        response.condition = product.getCondition().name();
         response.price = product.getPrice().longValue();
         response.mainImageUrl = product.getMainImageUrl();
         response.status = product.getStatus().name();
