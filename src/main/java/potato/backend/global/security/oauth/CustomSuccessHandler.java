@@ -30,16 +30,18 @@ import static potato.backend.global.constant.UrlConstant.DEFAULT_CLIENT_URL;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtService jwtService;
+    private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
+    private static final long ACCESS_TOKEN_EXPIRATION_SECONDS = 60 * 30;
 
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
+
         String targetUrl = determineTargetUrl(request, response, authentication);
         CookieUtil.deleteCookie(request, response, NEXT_URL_COOKIE_NAME, "/");
 
         CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-
         UserInfo userInfo = customOAuth2User.getUserInfo();
         
         // Access Token 생성
@@ -58,16 +60,17 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 UrlUtil.getRegistrableDomain(request.getServerName()),
                 REFRESH_TOKEN_EXPIRATION_SECONDS);
 
-        // Access Token을 쿼리 파라미터로 전달 (프론트엔드에서 추출 후 즉시 제거)
-        // 보안을 위해 짧은 시간만 유효하도록 설정되어 있음
-        String redirectUrl = targetUrl;
-        if (targetUrl.contains("?")) {
-            redirectUrl += "&accessToken=" + accessToken;
-        } else {
-            redirectUrl += "?accessToken=" + accessToken;
-        }
+        // Access Token을 쿠키에 저장
+        CookieUtil.addCookie(
+                response,
+                ACCESS_TOKEN_COOKIE_NAME,
+                accessToken,
+                "/",
+                SameSite.NONE,
+                UrlUtil.getRegistrableDomain(request.getServerName()),
+                ACCESS_TOKEN_EXPIRATION_SECONDS);
 
-        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
     @Override
