@@ -41,8 +41,14 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
         UserInfo userInfo = customOAuth2User.getUserInfo();
+        
+        // Access Token 생성
+        String accessToken = jwtService.createAccessToken(userInfo);
+        
+        // Refresh Token 생성
         String refreshToken = jwtService.createRefreshToken(userInfo);
 
+        // Refresh Token을 쿠키에 저장
         CookieUtil.addCookie(
                 response,
                 REFRESH_TOKEN_COOKIE_NAME,
@@ -52,7 +58,16 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 UrlUtil.getRegistrableDomain(request.getServerName()),
                 REFRESH_TOKEN_EXPIRATION_SECONDS);
 
-        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+        // Access Token을 쿼리 파라미터로 전달 (프론트엔드에서 추출 후 즉시 제거)
+        // 보안을 위해 짧은 시간만 유효하도록 설정되어 있음
+        String redirectUrl = targetUrl;
+        if (targetUrl.contains("?")) {
+            redirectUrl += "&accessToken=" + accessToken;
+        } else {
+            redirectUrl += "?accessToken=" + accessToken;
+        }
+
+        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 
     @Override
