@@ -1,5 +1,7 @@
 package potato.backend.global.security.controller;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -8,9 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,12 +36,9 @@ import potato.backend.global.security.jwt.RefreshToken;
 import potato.backend.global.security.jwt.RefreshTokenRepository;
 import potato.backend.global.security.oauth.UserInfo;
 import potato.backend.global.util.CookieUtil;
-import potato.backend.global.util.UrlUtil;
-
-import org.springframework.boot.web.server.Cookie.SameSite;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
 import static potato.backend.global.constant.SecurityConstant.REFRESH_TOKEN_COOKIE_NAME;
-import static potato.backend.global.constant.SecurityConstant.REFRESH_TOKEN_EXPIRATION_SECONDS;
 
 @Tag(name = "auth")
 @Slf4j
@@ -53,6 +51,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     private final MemberRepository memberRepository;
+    private final Optional<ClientRegistrationRepository> clientRegistrationRepository;
 
     @PostMapping("/token/issue")
     @Operation(
@@ -122,31 +121,42 @@ public class AuthController {
         return ResponseEntity.ok(new AccessTokenResponse(newAccessToken));
     }
 
-    @PostMapping("/logout")
+    @GetMapping("/providers")
     @Operation(
-            summary = "로그아웃",
-            description = "Refresh Token을 삭제하고 로그아웃합니다.",
-            responses = {@ApiResponse(responseCode = "200", description = "로그아웃 성공")})
-    public ResponseEntity<Void> logout(
-            @CookieValue(name = REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshTokenCookie,
-            HttpServletRequest request,
-            HttpServletResponse response) {
-        if (refreshTokenCookie != null && !refreshTokenCookie.isEmpty()) {
-            Claims claims;
-            try {
-                claims = jwtUtil.getClaims(refreshTokenCookie);
-                Long memberId = Long.parseLong(claims.getSubject());
-                refreshTokenRepository.deleteById(memberId);
-            } catch (Exception ignored) {
-            }
+            summary = "지원하는 소셜 로그인 제공자 목록 조회",
+            description = "현재 설정된 소셜 로그인 제공자 목록을 반환합니다. "
+                    + "프론트엔드에서 소셜 로그인 버튼을 동적으로 생성할 때 사용할 수 있습니다.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "소셜 로그인 제공자 목록 반환"),
+            })
+    public ResponseEntity<Map<String, Object>> getAvailableProviders() {
+        Map<String, Object> response = new HashMap<>();
+
+        if (clientRegistrationRepository.isEmpty()) {
+            response.put("providers", java.util.Collections.emptyList());
+            response.put("message", "소셜 로그인이 설정되지 않았습니다.");
+            return ResponseEntity.ok(response);
         }
 
-        // 리프레시 토큰 쿠키 삭제
-        CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
+        ClientRegistrationRepository repository = clientRegistrationRepository.get();
+        Map<String, String> providers = new HashMap<>();
 
-        // 스프링 시큐리티 컨텍스트 초기화
-        SecurityContextHolder.clearContext();
+        // Google
+        if (repository.findByRegistrationId("google") != null) {
+            providers.put("google", "/oauth2/authorization/google");
+        }
 
-        return ResponseEntity.ok().build();
+        // Naver
+        if (repository.findByRegistrationId("naver") != null) {
+            providers.put("naver", "/oauth2/authorization/naver");
+        }
+
+        // Kakao
+        if (repository.findByRegistrationId("kakao") != null) {
+            providers.put("kakao", "/oauth2/authorization/kakao");
+        }
+
+        response.put("providers", providers);
+        return ResponseEntity.ok(response);
     }
 }
