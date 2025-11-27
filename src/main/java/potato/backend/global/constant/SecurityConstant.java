@@ -3,6 +3,7 @@ package potato.backend.global.constant;
 public class SecurityConstant {
 
     // JWT
+    public static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     public static final String REFRESH_TOKEN_COOKIE_NAME = "RTOKEN";
     public static final long ACCESS_TOKEN_EXPIRATION_SECONDS = 60 * 30;
     public static final long REFRESH_TOKEN_EXPIRATION_SECONDS = 60 * 60 * 24 * 14;

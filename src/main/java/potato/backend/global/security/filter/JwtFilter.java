@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -13,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import potato.backend.global.security.jwt.JwtUtil;
+
+import static potato.backend.global.constant.SecurityConstant.ACCESS_TOKEN_COOKIE_NAME;
 
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -25,7 +28,14 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        // 헤더에서 Access Token 추출
         String accessToken = extractAccessTokenFromHeader(request);
+
+        // 헤더에 없으면 쿠키에서 토큰 추출
+        if (accessToken == null) {
+            accessToken = extractAccessTokenFromCookie(request);
+        }
 
         if (accessToken == null) {
             filterChain.doFilter(request, response);
@@ -51,6 +61,18 @@ public class JwtFilter extends OncePerRequestFilter {
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             return authorizationHeader.substring(7);
+        }
+        return null;
+    }
+
+    private String extractAccessTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (ACCESS_TOKEN_COOKIE_NAME.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }

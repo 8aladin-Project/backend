@@ -35,14 +35,20 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public void onAuthenticationSuccess(
             HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
+
         String targetUrl = determineTargetUrl(request, response, authentication);
         CookieUtil.deleteCookie(request, response, NEXT_URL_COOKIE_NAME, "/");
 
         CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-
         UserInfo userInfo = customOAuth2User.getUserInfo();
+        
+        // Access Token 생성
+        String accessToken = jwtService.createAccessToken(userInfo);
+        
+        // Refresh Token 생성
         String refreshToken = jwtService.createRefreshToken(userInfo);
 
+        // Refresh Token을 쿠키에 저장
         CookieUtil.addCookie(
                 response,
                 REFRESH_TOKEN_COOKIE_NAME,
@@ -51,6 +57,16 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 SameSite.NONE,
                 UrlUtil.getRegistrableDomain(request.getServerName()),
                 REFRESH_TOKEN_EXPIRATION_SECONDS);
+
+        // Access Token을 쿠키에 저장
+        CookieUtil.addCookie(
+                response,
+                ACCESS_TOKEN_COOKIE_NAME,
+                accessToken,
+                "/",
+                SameSite.NONE,
+                UrlUtil.getRegistrableDomain(request.getServerName()),
+                ACCESS_TOKEN_EXPIRATION_SECONDS);
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }

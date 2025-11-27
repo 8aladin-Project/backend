@@ -10,4 +10,5 @@ import potato.backend.domain.user.domain.Member;
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByOauthId(String oauthId);
+    Optional<Member> findByEmail(String email);
 }
