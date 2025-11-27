@@ -15,6 +15,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import potato.backend.global.security.jwt.JwtUtil;
 
+import static potato.backend.global.constant.SecurityConstant.ACCESS_TOKEN_COOKIE_NAME;
+
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
@@ -67,8 +69,7 @@ public class JwtFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                // SuccessHandler에서 설정한 쿠키 이름과 같은 경우 토큰 추출
-                if ("accessToken".equals(cookie.getName())) {
+                if (ACCESS_TOKEN_COOKIE_NAME.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }

@@ -39,6 +39,8 @@ import potato.backend.global.util.UrlUtil;
 
 import org.springframework.boot.web.server.Cookie.SameSite;
 
+import static potato.backend.global.constant.SecurityConstant.ACCESS_TOKEN_COOKIE_NAME;
+import static potato.backend.global.constant.SecurityConstant.ACCESS_TOKEN_EXPIRATION_SECONDS;
 import static potato.backend.global.constant.SecurityConstant.REFRESH_TOKEN_COOKIE_NAME;
 import static potato.backend.global.constant.SecurityConstant.REFRESH_TOKEN_EXPIRATION_SECONDS;
 
@@ -93,7 +95,17 @@ public class LoginController {
         String accessToken = jwtService.createAccessToken(userInfo);
         String refreshToken = jwtService.createRefreshToken(userInfo);
 
-        // 6. Refresh Token을 쿠키에 저장
+        // 6. Access Token을 쿠키에 저장
+        CookieUtil.addCookie(
+                response,
+                ACCESS_TOKEN_COOKIE_NAME,
+                accessToken,
+                "/",
+                SameSite.NONE,
+                UrlUtil.getRegistrableDomain(request.getServerName()),
+                ACCESS_TOKEN_EXPIRATION_SECONDS);
+
+        // 7. Refresh Token을 쿠키에 저장
         CookieUtil.addCookie(
                 response,
                 REFRESH_TOKEN_COOKIE_NAME,
@@ -103,9 +115,8 @@ public class LoginController {
                 UrlUtil.getRegistrableDomain(request.getServerName()),
                 REFRESH_TOKEN_EXPIRATION_SECONDS);
 
-        // 7. 응답 반환
+        // 8. 응답 반환 (Access Token은 쿠키로 전달하므로 응답 본문에서 제외)
         LoginResponse loginResponse = new LoginResponse(
-                accessToken,
                 member.getId(),
                 member.getName(),
                 member.getEmail());
@@ -132,7 +143,10 @@ public class LoginController {
             }
         }
 
-        // 리프레시 토큰 쿠키 삭제
+        // Access Token 쿠키 삭제
+        CookieUtil.deleteCookie(request, response, ACCESS_TOKEN_COOKIE_NAME, "/");
+
+        // Refresh Token 쿠키 삭제
         CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME, "/api/v1/auth");
 
         // 스프링 시큐리티 컨텍스트 초기화

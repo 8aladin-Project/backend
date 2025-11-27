@@ -30,8 +30,6 @@ import static potato.backend.global.constant.UrlConstant.DEFAULT_CLIENT_URL;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtService jwtService;
-    private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
-    private static final long ACCESS_TOKEN_EXPIRATION_SECONDS = 60 * 30;
 
     @Override
     public void onAuthenticationSuccess(
