@@ -20,16 +20,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import potato.backend.domain.chat.dto.chatMessage.ChatMessageListResponse;
-import potato.backend.domain.chat.dto.chatMessage.ChatMessageReadRequest;
 import potato.backend.domain.chat.dto.chatMessage.ChatMessageResponse;
 import potato.backend.domain.chat.dto.chatMessage.ChatReadResponse;
 import potato.backend.domain.chat.dto.chatMessage.ChatSendRequest;
 import potato.backend.domain.chat.dto.chatMessage.ChatUnreadCountResponse;
-import potato.backend.domain.chat.dto.chatRoom.ChatRoomReadRequest;
 import potato.backend.domain.chat.service.ChatMessageService;
 import potato.backend.global.util.MemberUtil;
 
-import jakarta.validation.Valid;
 import java.util.Map;
 import potato.backend.global.exception.ErrorResponse;
 
@@ -123,8 +120,7 @@ public class ChatMessageController {
     @PutMapping("/messages/{messageId}/read")
     public ResponseEntity<ChatReadResponse> markMessageAsRead(
             @Parameter(description = "읽음 처리할 메시지 ID", required = true)
-            @PathVariable Long messageId,
-            @Valid @RequestBody ChatMessageReadRequest request) {
+            @PathVariable Long messageId) {
 
         Long authenticatedMemberId = memberUtil.getCurrentUser().memberId();
         log.info("메시지 읽음 처리 요청: messageId={}, authenticatedMemberId={}", messageId, authenticatedMemberId);
@@ -217,8 +213,7 @@ public class ChatMessageController {
     @PutMapping("/rooms/{roomId}/read")
     public ResponseEntity<ChatReadResponse> markAllMessagesAsReadInRoom(
             @Parameter(description = "읽음 처리할 채팅방 ID", required = true)
-            @PathVariable Long roomId,
-            @RequestBody ChatRoomReadRequest request) {
+            @PathVariable Long roomId) {
 
         Long authenticatedMemberId = memberUtil.getCurrentUser().memberId();
         log.info("채팅방 전체 메시지 읽음 처리 요청: roomId={}, authenticatedMemberId={}", roomId, authenticatedMemberId);
