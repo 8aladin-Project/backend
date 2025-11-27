@@ -52,7 +52,17 @@ spring:
           max-active: 20
           max-idle: 10
           min-idle: 5
-
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: "https://api.8aladin.shop/login/oauth2/code/google"
+          naver:
+            redirect-uri: "https://api.8aladin.shop/login/oauth2/code/naver"
+          kakao:
+            redirect-uri: "https://api.8aladin.shop/login/oauth2/code/kakao"
+            
 logging:
   level:
     root: INFO
