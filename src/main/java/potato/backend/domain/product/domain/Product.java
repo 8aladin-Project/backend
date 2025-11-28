@@ -34,6 +34,10 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false) // DB의 product 테이블에 생성될 외래 키 컬럼 이름을 'member_id'로 지정
     private Member member;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "buyer_id")
+    private Member buyer; // 실제 구매자 (거래 완료 시 저장, nullable)
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "product_categories",
             joinColumns = @JoinColumn(name = "product_id"),
@@ -190,6 +194,18 @@ public class Product extends BaseEntity {
                     .toList();
             this.images.addAll(newImages);
         }
+    }
+
+    // 거래 완료 처리 메서드 (구매자 설정 및 상태 변경)
+    public void markAsSoldOut(Member buyer) {
+        if (this.status == Status.SOLD_OUT) {
+            throw new IllegalStateException("이미 판매 완료된 상품입니다");
+        }
+        if (buyer == null) {
+            throw new IllegalArgumentException("구매자는 null일 수 없습니다");
+        }
+        this.buyer = buyer;
+        this.status = Status.SOLD_OUT;
     }
 
 }

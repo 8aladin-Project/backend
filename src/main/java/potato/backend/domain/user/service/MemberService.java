@@ -4,9 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import potato.backend.domain.product.domain.Product;
+import potato.backend.domain.product.dto.ProductListResponse;
+import potato.backend.domain.product.repository.ProductRepository;
 import potato.backend.domain.user.domain.Member;
 import potato.backend.domain.user.exception.MemberNotFoundException;
 import potato.backend.domain.user.repository.MemberRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 회원 서비스
@@ -18,6 +24,7 @@ import potato.backend.domain.user.repository.MemberRepository;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final ProductRepository productRepository;
 
     /**
      * FCM 토큰 업데이트
@@ -44,6 +51,51 @@ public class MemberService {
 
         member.updateFcmToken(null);
         log.info("유효하지 않은 FCM 토큰 제거: memberId={}", memberId);
+    }
+
+    /**
+     * 판매내역 조회
+     * 내가 등록한 상품 목록을 반환합니다.
+     * @param memberId 회원 ID
+     * @return 판매내역 (상품 목록)
+     */
+    public List<ProductListResponse> getSalesHistory(Long memberId) {
+        log.info("판매내역 조회 시작 - memberId: {}", memberId);
+        
+        // 회원 존재 여부 확인
+        memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
+        
+        List<Product> products = productRepository.findByMemberIdWithDetails(memberId);
+        List<ProductListResponse> salesHistory = products.stream()
+                .map(ProductListResponse::fromEntity)
+                .collect(Collectors.toList());
+        
+        log.info("판매내역 조회 완료 - memberId: {}, 상품 개수: {}", memberId, salesHistory.size());
+        return salesHistory;
+    }
+
+    /**
+     * 구매내역 조회
+     * 내가 구매한 상품 목록을 반환합니다.
+     * (Product.buyer == 내 ID인 상품 목록)
+     * @param memberId 회원 ID
+     * @return 구매내역 (상품 목록)
+     */
+    public List<ProductListResponse> getPurchaseHistory(Long memberId) {
+        log.info("구매내역 조회 시작 - memberId: {}", memberId);
+        
+        // 회원 존재 여부 확인
+        memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
+        
+        List<Product> products = productRepository.findByBuyerIdWithDetails(memberId);
+        List<ProductListResponse> purchaseHistory = products.stream()
+                .map(ProductListResponse::fromEntity)
+                .collect(Collectors.toList());
+        
+        log.info("구매내역 조회 완료 - memberId: {}, 상품 개수: {}", memberId, purchaseHistory.size());
+        return purchaseHistory;
     }
 }
 
