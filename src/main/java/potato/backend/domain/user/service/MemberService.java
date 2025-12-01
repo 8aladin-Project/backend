@@ -2,11 +2,16 @@ package potato.backend.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import potato.backend.domain.user.domain.Member;
+import potato.backend.domain.user.dto.SignUpRequest;
+import potato.backend.domain.user.dto.SignUpResponse;
 import potato.backend.domain.user.exception.MemberNotFoundException;
 import potato.backend.domain.user.repository.MemberRepository;
+import potato.backend.global.exception.CustomException;
+import potato.backend.global.exception.ErrorCode;
 
 /**
  * 회원 서비스
@@ -18,6 +23,7 @@ import potato.backend.domain.user.repository.MemberRepository;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * FCM 토큰 업데이트
@@ -44,6 +50,41 @@ public class MemberService {
 
         member.updateFcmToken(null);
         log.info("유효하지 않은 FCM 토큰 제거: memberId={}", memberId);
+    }
+
+    /**
+     * 회원가입
+     * @param request 회원가입 요청 정보
+     * @return 회원가입 응답
+     */
+    @Transactional
+    public SignUpResponse signUp(SignUpRequest request) {
+        log.info("회원가입 요청: email={}, name={}", request.getEmail(), request.getName());
+
+        // 이메일 중복 체크
+        if (memberRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        // 비밀번호 암호화
+        String hashedPassword = passwordEncoder.encode(request.getPassword());
+
+        // 회원 생성
+        Member member = Member.create(
+                request.getName(),
+                request.getEmail(),
+                hashedPassword,
+                request.getMobileNumber()
+        );
+
+        Member savedMember = memberRepository.save(member);
+        log.info("회원가입 완료: memberId={}, email={}", savedMember.getId(), savedMember.getEmail());
+
+        return SignUpResponse.of(
+                savedMember.getId(),
+                savedMember.getName(),
+                savedMember.getEmail()
+        );
     }
 }
 

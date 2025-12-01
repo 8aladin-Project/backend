@@ -55,6 +55,7 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/api/v1/login",
                                 "/api/v1/logout",
+                                "/api/v1/members/signup",
                                 "/api/v1/auth/providers",
                                 "/api/v1/auth/token/issue",
                                 "/oauth2/**",
