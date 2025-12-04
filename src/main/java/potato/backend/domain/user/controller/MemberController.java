@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import potato.backend.domain.user.dto.FcmTokenRequest;
 import potato.backend.domain.user.dto.FcmTokenResponse;
+import potato.backend.domain.user.dto.SignUpRequest;
+import potato.backend.domain.user.dto.SignUpResponse;
 import potato.backend.domain.user.service.MemberService;
 import potato.backend.global.util.MemberUtil;
 
@@ -28,6 +30,37 @@ public class MemberController {
 
     private final MemberService memberService;
     private final MemberUtil memberUtil;
+
+    /**
+     * 회원가입 API
+     */
+    @Operation(summary = "회원가입 API", description = "새로운 회원을 등록합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "회원가입 성공",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = SignUpResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (유효성 검증 실패)",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "이미 사용 중인 이메일",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    @PostMapping("/signup")
+    public ResponseEntity<SignUpResponse> signUp(@Valid @RequestBody SignUpRequest request) {
+        log.info("회원가입 요청: email={}", request.getEmail());
+        
+        SignUpResponse response = memberService.signUp(request);
+        log.info("회원가입 완료: memberId={}", response.getMemberId());
+        
+        return ResponseEntity.ok(response);
+    }
 
     /**
      * FCM 토큰 등록 API
