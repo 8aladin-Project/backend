@@ -66,8 +66,28 @@ public class MemberService {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
+        // 비밀번호 길이 체크 (BCrypt는 72바이트 제한)
+        byte[] passwordBytes = request.getPassword().getBytes();
+        if (passwordBytes.length > 72) {
+            log.warn("비밀번호 길이 초과: {} bytes (최대 72바이트)", passwordBytes.length);
+            throw new CustomException(ErrorCode.PASSWORD_TOO_LONG);
+        }
+
         // 비밀번호 암호화
-        String hashedPassword = passwordEncoder.encode(request.getPassword());
+        String hashedPassword;
+        try {
+            hashedPassword = passwordEncoder.encode(request.getPassword());
+        } catch (IllegalArgumentException e) {
+            // BCryptPasswordEncoder가 72바이트 초과 시 IllegalArgumentException 발생
+            String errorMessage = e.getMessage();
+            if (errorMessage != null && (errorMessage.contains("72") || errorMessage.contains("cannot be more than"))) {
+                log.warn("BCryptPasswordEncoder 비밀번호 길이 초과: {}", errorMessage);
+                throw new CustomException(ErrorCode.PASSWORD_TOO_LONG);
+            }
+            // 다른 IllegalArgumentException은 그대로 전파
+            log.error("비밀번호 암호화 중 예외 발생: {}", errorMessage, e);
+            throw new CustomException(ErrorCode.INVALID_ARGUMENT, "비밀번호 암호화에 실패했습니다: " + errorMessage);
+        }
 
         // 회원 생성
         Member member = Member.create(
