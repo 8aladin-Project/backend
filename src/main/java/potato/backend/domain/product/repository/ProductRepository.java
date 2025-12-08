@@ -61,8 +61,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     /**
      * 사용자별 상품 조회 (사용자아이디) - 리스트 반환 (판매내역 조회용)
      * SQL: SELECT * FROM product WHERE 사용자아이디 = ? ORDER BY created_at DESC
+     * DISTINCT 사용: @ManyToMany 관계인 categories 때문에 중복 제거 필요
      */
-    @Query("SELECT p FROM Product p " +
+    @Query("SELECT DISTINCT p FROM Product p " +
            "JOIN FETCH p.member " +
            "LEFT JOIN FETCH p.categories " +
            "WHERE p.member.id = :memberId " +
@@ -72,8 +73,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     /**
      * 구매자별 상품 조회 (구매내역 조회용)
      * SQL: SELECT * FROM product WHERE buyer_id = ? ORDER BY created_at DESC
+     * DISTINCT 사용: @ManyToMany 관계인 categories 때문에 중복 제거 필요
      */
-    @Query("SELECT p FROM Product p " +
+    @Query("SELECT DISTINCT p FROM Product p " +
            "JOIN FETCH p.member " +
            "JOIN FETCH p.buyer " +
            "LEFT JOIN FETCH p.categories " +

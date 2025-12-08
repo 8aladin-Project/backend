@@ -18,7 +18,8 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
     List<Wishlist> findByMemberIdOrderByCreatedAtDesc(Long memberId);
 
     // 특정 회원의 위시리스트 목록 조회
-    @Query("SELECT w FROM Wishlist w " +
+    // DISTINCT 사용: @ManyToMany 관계인 categories 때문에 중복 제거 필요
+    @Query("SELECT DISTINCT w FROM Wishlist w " +
            "JOIN FETCH w.product p " +
            "JOIN FETCH p.member " +
            "LEFT JOIN FETCH p.categories " +

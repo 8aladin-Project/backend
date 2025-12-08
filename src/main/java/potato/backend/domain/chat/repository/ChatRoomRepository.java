@@ -44,7 +44,8 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     List<ChatRoom> findAllByMemberId(@Param("memberId") Long memberId);
 
     // 구매자가 거래 완료한 채팅방 목록을 조회하는 메서드
-    @Query("SELECT cr FROM ChatRoom cr " +
+    // DISTINCT 사용: @ManyToMany 관계인 categories 때문에 중복 제거 필요
+    @Query("SELECT DISTINCT cr FROM ChatRoom cr " +
            "JOIN FETCH cr.product p " +
            "JOIN FETCH p.member " +
            "LEFT JOIN FETCH p.categories " +
