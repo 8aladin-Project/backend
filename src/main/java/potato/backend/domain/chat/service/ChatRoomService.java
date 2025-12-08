@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import potato.backend.domain.chat.domain.ChatRoom;
 import potato.backend.domain.chat.dto.chatMessage.ChatRoomCreateRequest;
 import potato.backend.domain.chat.dto.chatRoom.ChatRoomDetailResponse;
@@ -22,10 +23,13 @@ import potato.backend.domain.product.domain.Product;
 import potato.backend.domain.product.repository.ProductRepository;
 import potato.backend.domain.user.domain.Member;
 import potato.backend.domain.user.repository.MemberRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -200,5 +204,50 @@ public class ChatRoomService {
         if (request.getSellerId().equals(request.getBuyerId())) {
             throw new InvalidChatRoomParticipantsException();
         }
+    }
+
+    /**
+     * 거래 완료 처리
+     * 판매자가 특정 채팅방을 거래 완료로 표시하고, 상품 상태를 SOLD_OUT으로 변경
+     * @param chatRoomId 채팅방 ID
+     * @param sellerId 판매자 ID (요청자 검증용)
+     */
+    @Transactional
+    public void completeTransaction(Long chatRoomId, Long sellerId) {
+        log.info("거래 완료 처리 시작 - chatRoomId: {}, sellerId: {}", chatRoomId, sellerId);
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new ChatRoomNotFoundException(chatRoomId));
+
+        // 판매자 검증
+        if (!chatRoom.getSeller().getId().equals(sellerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "거래 완료는 판매자만 가능합니다");
+        }
+
+        // 이미 거래 완료된 채팅방인지 확인
+        if (chatRoom.getCompleted()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "이미 거래가 완료된 채팅방입니다");
+        }
+
+        Product product = chatRoom.getProduct();
+        if (product == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "채팅방에 연결된 상품이 없습니다");
+        }
+
+        // 이미 다른 채팅방으로 거래 완료된 상품인지 확인
+        if (product.getStatus() == potato.backend.domain.product.domain.Status.SOLD_OUT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "이미 판매 완료된 상품입니다");
+        }
+
+        // 거래 완료 처리
+        chatRoom.completeTransaction();
+        product.markAsSoldOut(chatRoom.getBuyer());
+
+        log.info("거래 완료 처리 완료 - chatRoomId: {}, productId: {}, buyerId: {}", 
+                chatRoomId, product.getId(), chatRoom.getBuyer().getId());
     }
 }

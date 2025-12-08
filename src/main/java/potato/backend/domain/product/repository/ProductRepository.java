@@ -52,11 +52,36 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     long countAllProducts();
     
     /**
-     * 사용자별 상품 조회 (사용자아이디)
+     * 사용자별 상품 조회 (사용자아이디) - 페이징 포함
      * SQL: SELECT * FROM product WHERE 사용자아이디 = ? ORDER BY created_at DESC
      */
     @Query("SELECT p FROM Product p WHERE p.member.id = :memberId ORDER BY p.createdAt DESC")
     Page<Product> findByMemberId(@Param("memberId") Long memberId, Pageable pageable);
+
+    /**
+     * 사용자별 상품 조회 (사용자아이디) - 리스트 반환 (판매내역 조회용)
+     * SQL: SELECT * FROM product WHERE 사용자아이디 = ? ORDER BY created_at DESC
+     * DISTINCT 사용: @ManyToMany 관계인 categories 때문에 중복 제거 필요
+     */
+    @Query("SELECT DISTINCT p FROM Product p " +
+           "JOIN FETCH p.member " +
+           "LEFT JOIN FETCH p.categories " +
+           "WHERE p.member.id = :memberId " +
+           "ORDER BY p.createdAt DESC")
+    java.util.List<Product> findByMemberIdWithDetails(@Param("memberId") Long memberId);
+
+    /**
+     * 구매자별 상품 조회 (구매내역 조회용)
+     * SQL: SELECT * FROM product WHERE buyer_id = ? ORDER BY created_at DESC
+     * DISTINCT 사용: @ManyToMany 관계인 categories 때문에 중복 제거 필요
+     */
+    @Query("SELECT DISTINCT p FROM Product p " +
+           "JOIN FETCH p.member " +
+           "JOIN FETCH p.buyer " +
+           "LEFT JOIN FETCH p.categories " +
+           "WHERE p.buyer.id = :buyerId " +
+           "ORDER BY p.createdAt DESC")
+    java.util.List<Product> findByBuyerIdWithDetails(@Param("buyerId") Long buyerId);
     
     /**
      * 상태별 상품 조회 (상태)

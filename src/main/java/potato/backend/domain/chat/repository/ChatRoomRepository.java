@@ -42,4 +42,14 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
      */
     @Query("select cr from ChatRoom cr where cr.seller.id = :memberId or cr.buyer.id = :memberId")
     List<ChatRoom> findAllByMemberId(@Param("memberId") Long memberId);
+
+    // 구매자가 거래 완료한 채팅방 목록을 조회하는 메서드
+    // DISTINCT 사용: @ManyToMany 관계인 categories 때문에 중복 제거 필요
+    @Query("SELECT DISTINCT cr FROM ChatRoom cr " +
+           "JOIN FETCH cr.product p " +
+           "JOIN FETCH p.member " +
+           "LEFT JOIN FETCH p.categories " +
+           "WHERE cr.buyer.id = :buyerId AND cr.completed = true " +
+           "ORDER BY cr.completedAt DESC")
+    List<ChatRoom> findCompletedByBuyerIdWithProduct(@Param("buyerId") Long buyerId);
 }
