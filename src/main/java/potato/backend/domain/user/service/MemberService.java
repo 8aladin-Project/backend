@@ -1,5 +1,7 @@
 package potato.backend.domain.user.service;
 
+import java.nio.charset.StandardCharsets;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -72,6 +74,13 @@ public class MemberService {
         // 이메일 중복 체크
         if (memberRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        // 비밀번호 길이 체크 (BCrypt는 72바이트 제한)
+        byte[] passwordBytes = request.getPassword().getBytes(StandardCharsets.UTF_8);
+        if (passwordBytes.length > 72) {
+            log.warn("비밀번호 길이 초과: {} bytes (최대 72바이트)", passwordBytes.length);
+            throw new CustomException(ErrorCode.PASSWORD_TOO_LONG);
         }
 
         // 비밀번호 암호화
