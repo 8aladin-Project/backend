@@ -206,14 +206,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
         logByType(e);
-        
-        // BCryptPasswordEncoder의 비밀번호 길이 초과 예외 처리
-        String errorMessage = e.getMessage();
-        if (errorMessage != null && (errorMessage.contains("72") || errorMessage.contains("cannot be more than"))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ErrorResponse.of(ErrorCode.PASSWORD_TOO_LONG));
-        }
-        
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(ErrorCode.INVALID_ARGUMENT, e.getMessage()));
     }
